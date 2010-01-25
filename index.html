@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
+ 
+<head> 
+  <meta http-equiv="content-type" content="text/html;charset=utf-8" /> 
+  <title>Grider 2</title> 
+  <link rel="Stylesheet" href="/stylesheets/screen.css" type="text/css" media="screen" /> 
+</head> 
+<style>
+  body{
+    font-family: arial;
+  }
+  table{
+    border-collapse: collapse;
+    font-size: 13px;
+    border: 1px solid #303030;
+  }
+  th{
+    padding: 2px;
+  }
+
+  th, td{
+    border: 1px solid #303030;
+  }
+
+  table.grider-table td div{
+    height: 13px;
+    padding: 3px 3px 3px 5px;
+    font-size: 13px;
+    overflow: hidden;
+  }
+
+  div input, table textarea, table select{
+    font-size: 13px;
+    border: 2px solid navy;
+  }
+  table textarea{
+    height: 40px;
+  }
+</style>
+
+<script type="text/javascript" src="javascript/jquery1.4.js"></script> 
+<script type="text/javascript" src="javascript/ui.core.js"></script> 
+<script type="text/javascript" src="javascript/jquery.ui.ufd.js"></script> 
+<script type="text/javascript" src="javascript/jquery.grider2.js"></script> 
+
+<link rel="stylesheet" href="css/ufd/ufd-base.css"></link>
+<link rel="stylesheet" href="css/ufd/plain/plain.css"></link>
+
+<body class="overview"> 
+  <div id="browser">
+  </div>
+  <div class="grider">
+    <table border="1">
+      <tr>
+        <th style="width: 100px" name="nombre">Nombre</th>
+        <th name="precio">Precio</th>
+        <th name="cantidad">Cantidad</th>
+        <th name="subtotal" formula="nombre*rol">Subtotal</th>
+        <th style="width:200px" name="descripcion">Descripción</th>
+        <th style="width:150px" name="estado">Estado</th>
+        <th>Suave</th>
+      </tr>
+      
+      <tr class="edit">
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+      </tr>
+      <input type="hidden" name="usuario[prueba_attributes][0][nombre]" value="hola" />
+
+      <tr class="edit">
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+      </tr>
+      <input type="hidden" name="usuario[prueba_attributes][1][nombre]" value="hola2" />
+
+      <tr class="edit">
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+        <td><div></div></td>
+      </tr>
+      <input type="hidden" name="usuario[prueba_attributes][1][nombre]" value="hola2" />
+
+    </table> 
+    <!-- Aqui se define el tipo de datos para el formulario -->
+    <div class="grider-control usuario_nombre" name="nombre">
+      <input type="text" id="usuario_nombre" name="usuario[0][nombre]" />
+    </div>
+    <div class="grider-control usuario_precio" name="precio">
+      <input type="text" id="usuario_precio" name="usuario[0][precio]" />
+    </div>
+    <div class="grider-control usuario_descripcion" name="descripcion">
+      <textarea id="usuario_descripcion" name="usuario[0][descripcion]"></textarea>
+    </div>
+
+    <div class="grider-control usuario_estado" name="estado">
+      <select id="usuario_estado">
+        <option value="AL">Alabama</option>
+        <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
+        <option value="AZ">Arizona</option>
+        <option value="AR">Arkansas</option>
+        <option value="CA">California</option>
+        <option value="CO">Colorado</option>
+        <option value="CT">Connecticut</option>
+        <option value="DE">Delaware</option>
+        <option value="FL">Florida</option>
+        <option value="GA">Georgia</option>
+        <option value="HI">Hawaii</option>
+        <option value="ID">Idaho</option>
+        <option value="IL">Illinois</option>
+        <option value="IN">Indiana</option>
+        <option value="IA">Iowa</option>
+        <option value="KS">Kansas</option>
+        <option value="KY">Kentucky</option>
+        <option value="LA">Louisiana</option>
+        <option value="ME">Maine</option>
+        <option value="MD">Maryland</option>
+        <option value="MA">Massachusetts</option>
+        <option value="MI">Michigan</option>
+        <option value="MN">Minnesota</option>
+        <option value="MS">Mississippi</option>
+        <option value="MO">Missouri</option>
+        <option value="MT">Montana</option>
+        <option value="NE">Nebraska</option>
+        <option value="NV">Nevada</option>
+        <option value="NH">New Hampshire</option>
+        <option value="NJ">New Jersey</option>
+        <option value="NM">New Mexico</option>
+        <option value="NY">New York</option>
+        <option value="NC">North Carolina</option>
+        <option value="ND">North Dakota</option>
+        <option value="OH">Ohio</option>
+        <option value="OK">Oklahoma</option>
+        <option value="OR">Oregon</option>
+        <option value="PA">Pennsylvania</option>
+        <option value="RI">Rhode Island</option>
+        <option value="SC">South Carolina</option>
+        <option value="SD">South Dakota</option>
+        <option value="TN">Tennessee</option>
+        <option value="TX">Texas</option>
+        <option value="UT">Utah</option>
+        <option value="VT">Vermont</option>
+        <option value="VA">Virginia</option>
+        <option value="WA">Washington</option>
+        <option value="WV">West Virginia</option>
+        <option value="WI">Wisconsin</option>
+        <option value="WY">Wyoming</option>
+      </select>
+    </div>
+  </div>
+
+</body> 
+<script>
+  $(document).ready(function() {
+
+    // UFD
+    $('#usuario_estado').ufd({'manualWidth': 150})
+    .change(function() {
+      $('div.editable').html($(this).siblings('input:text').val()).removeClass("editable");
+    });
+    $('input:text[name=_ufd]').blur(function() {
+      $(this).parents('div.grider-control').hide();
+    });
+
+    // Creacion de grider
+    $('div.grider').grider();
+/*
+    if($.browser.safari) {
+      var h = 3;
+    }else{
+      var h = 2;
+    }
+
+    var inputs = {'usuario_nombre': 'text', 'usuario_rol': 'select'};
+
+    // Definir dimensiones
+    $('table tr:eq(1) td div.edit').each(function(i, el) {
+      var name;
+      if(name = $(el).attr("name")){
+        var w = $(el).width() + 7;
+        $('div.grider-control.' + name).find("input, textarea").css({'width': w});
+      }
+    });
+
+    
+    // Ocultar y posicion absoluta
+    $('div.grider-control').css({'position': 'absolute'}).hide();
+
+    // Evento cuando se hace click
+    $('td div.edit').live("click", function() {
+      var pos = $(this).position();
+      var name = $(this).attr("name");
+
+      var $div = $('div.grider-control.' + name);
+
+      $div.css({top: pos.top - h, left: pos.left - 2}).show();
+
+      $div.find('input, select, textarea').val($(this).html()).focus();
+      $(this).addClass("editable");
+    });
+
+    // Evento cuando se pierde de foco
+    //$('div.grider-control input, div.grider-control textarea, div.grider-control select') // Modificado para UFD
+    $('div.grider-control>input, div.grider-control>textarea, div.grider-control>select').blur(function() { 
+      $('div.editable').html($(this).val()).removeClass('editable');
+      $(this).parents('div.grider-control').hide();
+    }).keydown(function(e) {
+      if(e.keyCode == $.ui.core.keyCode.ESCAPE) {
+        $(this).trigger("blur");
+      }
+    });
+
+
+    var html = '';
+    for(k in $.browser){
+      html += k + ': ';
+      html += $.browser[k] + '<br />';
+    }
+    $('#browser').html(html);
+      
+*/
+  });
+</script>
+</html>
