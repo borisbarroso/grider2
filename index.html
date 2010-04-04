@@ -5,6 +5,7 @@
   <meta http-equiv="content-type" content="text/html;charset=utf-8" /> 
   <title>Grider 2</title> 
   <link rel="Stylesheet" href="/stylesheets/screen.css" type="text/css" media="screen" /> 
+  <link rel="Stylesheet" href="javascript/qunit/qunit.css" type="text/css" media="screen" /> 
 </head> 
 <style>
   body{
@@ -23,6 +24,10 @@
     border: 1px solid #303030;
   }
 
+  td.selected {background: #EFEFEF; }
+
+  tr { height: 22px; }
+
   table.grider-table td div{
     height: 13px;
     padding: 3px 3px 3px 5px;
@@ -32,17 +37,20 @@
 
   div input, table textarea, table select{
     font-size: 13px;
-    border: 2px solid navy;
+    border: 2px solid grey;
   }
   table textarea{
     height: 40px;
   }
 </style>
 
-<script type="text/javascript" src="javascript/jquery1.4.js"></script> 
-<script type="text/javascript" src="javascript/ui.core.js"></script> 
-<script type="text/javascript" src="javascript/jquery.ui.ufd.js"></script> 
+<script type="text/javascript" src="javascript/jquery-1.4.2.js"></script> 
+<script type="text/javascript" src="javascript/jquery.ui.core.js"></script> 
+<script type="text/javascript" src="javascript/jquery.ui.ufd.js--"></script> 
 <script type="text/javascript" src="javascript/jquery.grider2.js"></script> 
+<script type="text/javascript" src="javascript/qunit/qunit.js"></script> 
+<script type="text/javascript" src="javascript/test.js"></script> 
+
 
 <link rel="stylesheet" href="css/ufd/ufd-base.css"></link>
 <link rel="stylesheet" href="css/ufd/plain/plain.css"></link>
@@ -51,15 +59,16 @@
   <div id="browser">
   </div>
   <div class="grider">
-    <table border="1">
+    <table border="1" id="grid1">
       <tr>
-        <th style="width: 100px" name="nombre">Nombre</th>
-        <th name="precio">Precio</th>
-        <th name="cantidad">Cantidad</th>
-        <th name="subtotal" formula="nombre*rol">Subtotal</th>
-        <th style="width:200px" name="descripcion">Descripción</th>
-        <th style="width:150px" name="estado">Estado</th>
-        <th>Suave</th>
+        <th col="number">Nº</th>
+        <th style="width: 100px" col="name" editor="nameEditor">Name</th>
+        <th style="width:200px" col="description" editor="descriptionEditor">Description</th>
+        <th style="width:100px" col="price" editor="priceEditor">Price</th>
+        <th style="width:100px" col="quantity" editor="quantityEditor">Quantity</th>
+        <th style="width:150px" col="state" editor="stateEditor">State</th>
+        <th style="width:150px" col="date" editor="dateEditor">Date</th>
+        <th style="width:100px" col="subtotal" formula="nombre*rol" summary="sum">Subtotal</th>
       </tr>
       
       <tr class="edit">
@@ -70,8 +79,9 @@
         <td><div></div></td>
         <td><div></div></td>
         <td><div></div></td>
+        <td><div></div></td>
       </tr>
-      <input type="hidden" name="usuario[prueba_attributes][0][nombre]" value="hola" />
+      <input type="hidden" id="user[test_attributes][0][id]" value="1" />
 
       <tr class="edit">
         <td><div></div></td>
@@ -81,8 +91,9 @@
         <td><div></div></td>
         <td><div></div></td>
         <td><div></div></td>
+        <td><div></div></td>
       </tr>
-      <input type="hidden" name="usuario[prueba_attributes][1][nombre]" value="hola2" />
+      <input type="hidden" id="user[test_attributes][1][id]" value="2" />
 
       <tr class="edit">
         <td><div></div></td>
@@ -92,23 +103,34 @@
         <td><div></div></td>
         <td><div></div></td>
         <td><div></div></td>
+        <td><div></div></td>
       </tr>
-      <input type="hidden" name="usuario[prueba_attributes][1][nombre]" value="hola2" />
+      <input type="hidden" id="user[test_attributes][1][id]" value="3" />
 
     </table> 
+
     <!-- Aqui se define el tipo de datos para el formulario -->
-    <div class="grider-control usuario_nombre" name="nombre">
-      <input type="text" id="usuario_nombre" name="usuario[0][nombre]" />
+    <div id="nameEditor" class="griderEditor">
+      <input type="text" name="user[#{}][name]" />
     </div>
-    <div class="grider-control usuario_precio" name="precio">
-      <input type="text" id="usuario_precio" name="usuario[0][precio]" />
-    </div>
-    <div class="grider-control usuario_descripcion" name="descripcion">
-      <textarea id="usuario_descripcion" name="usuario[0][descripcion]"></textarea>
+    <div id="priceEditor" class="griderEditor">
+      <input type="text" id="user_price" name="user[#{}][price]" />
     </div>
 
-    <div class="grider-control usuario_estado" name="estado">
-      <select id="usuario_estado">
+    <div id="quantityEditor" class="griderEditor">
+      <input type="text" id="user_price" name="user[#{}][quantity]" />
+    </div>
+
+    <div id="descriptionEditor" class="griderEditor">
+      <textarea id="user_description" name="user[#{}][description]"></textarea>
+    </div>
+
+    <div id="dateEditor" class="griderEditor">
+      <input type="text" id="user_price" name="user[#{}][date]" />
+    </div>
+
+    <div id="stateEditor" class="griderEditor">
+      <select id="user_state" name="user[#{}][state]">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
         <option value="AZ">Arizona</option>
@@ -161,23 +183,38 @@
         <option value="WY">Wyoming</option>
       </select>
     </div>
+
+
   </div>
+
+  <!--Tags for qunit-->
+	<h1 id="qunit-header">QUnit Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
 
 </body> 
 <script>
   $(document).ready(function() {
 
+    /**
+    * Tests para qunit
+    */
+
     // UFD
-    $('#usuario_estado').ufd({'manualWidth': 150})
+    /*$('#usuario_estado').ufd({'manualWidth': 150})
     .change(function() {
       $('div.editable').html($(this).siblings('input:text').val()).removeClass("editable");
-    });
+    });*/
+
+
     $('input:text[name=_ufd]').blur(function() {
       $(this).parents('div.grider-control').hide();
     });
 
     // Creacion de grider
-    $('div.grider').grider();
+    grider1 = $('#grid1').grider();
 /*
     if($.browser.safari) {
       var h = 3;

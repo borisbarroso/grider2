@@ -8,10 +8,9 @@
 
 (function($) {
   $.fn.extend({
-    'grider': function(config) {
-      return this.each(function() {
-        new $.Grider(this, config);
-      });
+    'grider': function(config, renderOptions) {
+      var grids = [];
+      return new Grider(this, config, renderOptions);
     }
   });
 
@@ -19,110 +18,183 @@
    * Constructor
    * @param DOM div
    * @param Object config
+   * @param Object renderOptions
    */
-  $.Grider = function(div, config) {
-    this.defaults = $.extend(Grider.defaults, config);
+  function Grider(table, config, renderOptions) {
 
-    this.$div = $(div);
-    this.$table = this.$div.find("table:first");
-    if(this.$table.length <= 0)
-      throw(this.defaults.errors.tableTagName + ': on line 29' );
-    // Add the class to the table
-    this.$table.addClass(this.defaults.griderTableClass);
+    // Variable that helps to set which variables or functions should return
+    var ret = {};
 
-    this.$div.find("div.grider-control").hide().css({'position': 'absolute'});
-    // set the Fields
-    this.setFields();
-    // set the controls for editing
-    this.setControls();
-    // set the Events
-    this.setEvents();
+    var $table = $(table);
+    // settings
+    var defaults = {
+      'selectedCellClass': 'selected'
+    };
 
-    console.log(this);////////////////////
-  }
+    defaults = $.extend(defaults, config);
 
-  $.Grider.prototype = {
-    '$div': '',
-    '$table': '',
-    'fields': {},
+    var columns = {};
+    ret['columns'] = columns;
+
+    // const
+    
+    // private
+
     /**
-     * Atributes for each name
-     * @param name: Indicates the name of the column
-     * @param summary: Indicates the summary type for the column 
-     *   "min": minimun value in the column, 
-     *   "max": maximun value in the column, 
-     *   "sum": sum the column,
-     *   "avg": average value of the column
-     * @param numerate: Indicates if the column is for numeration
-     * @param formula: Indicates the formula that should be applied to the column
+     * Constructor function
      */
-    'thAttributes': ["name", "summary", "numerate", "formula"],
-    /**
-     * Object where all data is stored
-     */
-    'data': {},
-    '':'',
-    /**
-     * Set the fields according to thAtributes
-     */
-    'setFields': function() {
-      var self = this;
-      this.$table.find("tr:first th").each(function(i, el) {
-        var name;
+    function init() {
+      setRows();
+      setColumns();
+      setEditorEvents();
+    }
 
-        $(self.thAttributes).each(function(j, elem) {
-          var attr = $(el).attr(elem);
+    /**
+     * Defines columns and positions
+     */
+    function setColumns() {
+      $table.find("tr:first th").each(function(i, el) {
+        var col = $(el).attr("col");
+        if(col == null || col == undefined) {
+          col = (new Date()).getTime();
+        }
+        var hash = {'pos': i, 'width': $(el).width()};
 
-          if(elem == "name" && attr != undefined) {
-            var w = $(el).width() + 7;
-            self.fields[attr] = {'pos': i, 'name': attr, 'width': w };
-            var pos = i + 1;
-            self.$table.find('tr td:nth-child(' + pos + ')').attr('name', attr);
-            name = attr;
-          }else if(attr != undefined) {
-            self.fields[name][elem] = attr;
-          }else if(attr == undefined && elem == "name" ) {
-            // Create a name
-            var tmpName = new Date().getTime();
-            $(el).attr("name", tmpName);
-            var w = $(el).width() + 7;
-            self.fields[tmpName] = {'pos': i, 'name': tmpName, 'width': w}
-            var pos = i + 1;
-            self.$table.find('tr td:nth-child(' + pos + ')').attr('name', tmpName);
+        // set the editor
+        var editor = $(el).attr("editor");
+        if(editor != null && editor != undefined) {
+          hash['editor'] = editor;
+          $table.find("td:nth-child(" + (i + 1) + ")").addClass("editable").attr("col", col);
+          $editor = $('#' + editor);
+
+          if( $editor.length <= 0)
+            throw('You need to create an editor:"' +  + '" for the column "' + col + '"');
+          else {
+            $editor.hide().css("position", "absolute");
+            $editor.find("input:text, textarea, select").css("width", hash.width);
           }
-        });
-      });
-    },
-    /**
-     * Defines the controls that are editable
-     */
-    'setControls': function() {
-      var self = this;
-      this.$div.find("div.grider-control").each(function(i, el) {
-        var name = $(el).attr("name");
-        var control = $(el).find("input, select, textarea");
-        self.fields[name]['editable'] = true;
-        var pos = self.fields[name].pos + 1;
-        self.$table.find('tr td:nth-child(' + pos + ')').addClass(self.defaults.tdEditableClass);
-      });
-    },
-    /**
-     * Sets the events for the cells that have a class
-     */
-    'setEvents': function() {
-    }
-  }
+        }else{
+          $table.find("td:nth-child(" + (i + 1) + ")").attr("col", col);
+        }
+        
+        columns[col] = hash;
 
-  Grider = {};
-  $.extend(Grider, {'defaults':
-    {
-      'griderTableClass': 'grider-table',
-      'tdEditableClass': 'editable',
-      'errors': {
-        'tableTagName': 'The selected item must be a Table'
+      });
+    }
+
+    /**
+     * set editor events
+     */
+    function setEditorEvents() {
+      // Selection
+      var $sel;
+      var col;
+      $("td.editable").live("mousedown", function() {
+        $sel = $(this);
+        setSelectedCell($sel);
+        col = $sel.attr("col");
+      });
+
+      $("td.editable").live("click", function() {
+        $(".griderEditor").hide();
+        setEditorPosition(col);
+        $('#' + columns[col].editor).show();
+      });
+      
+      $(document).keyup(function(e) { navigateCells(e) });
+
+    }
+
+    /**
+     * Sets the position on the editor
+     * @param String col
+     */
+    function setEditorPosition(col) {
+      $div = $('#' + columns[col].editor);
+      pos = $("td.selected").position();
+      $div.css({left:pos.left, top:pos.top});
+    }
+
+    /**
+     * set the current TD cell
+     * @param DOM cell
+     */
+    function setSelectedCell(cell) {
+        $('.' + defaults.selectedCellClass).removeClass(defaults.selectedCellClass);
+        $(cell).addClass(defaults.selectedCellClass);
+    }
+
+    /**
+     * Set Editor positions
+     */
+
+    /**
+     * Funcion to navigate through cells
+     */
+    function navigateCells(e) {
+      if($(".griderEditor[style*=block]").length > 0)
+        return false;
+
+      var $td = $table.find('.' + defaults.selectedCellClass);
+      var col = $td.attr("col");
+      switch(e.keyCode) {
+        case $.ui.keyCode.DOWN:
+          console.log($td);
+          setSelectedCell($td.parent("tr:first").next().find('td[col=' + col + ']') );
+        break;
+        case $.ui.keyCode.UP:
+          setSelectedCell($td.parent("tr").previous().find('td[col=' + col + ']') );
+        break;
+        case $.ui.keyCode.LEFT:
+          console.log("left");
+        break;
+        case $.ui.keyCode.RIGHT:
+          console.log("right");
+        break;
+        case $.ui.keyCode.TAB:
+          console.log("tab");
+        break;
+        case $.ui.keyCode.ENTER:
+          console.log("enter");
+        break;
+        case $.ui.keyCode.ESC:
+          console.log("esc");
+        break;
       }
-
     }
-  });
-  
+
+    /**
+     * Set the row number
+     */
+    function setRows() {
+      $table.find("tr").each(function(i, el) {
+        $(el).attr("row", i);
+      });
+    }
+
+
+    /******************************************************
+     * List of funtions used to render the display
+     */
+    var renderers = {
+      dateRenderer: function(val) {
+      },
+      percentageRenderer: function(val) {
+      }
+    }
+    
+    // Override defaults
+    renderers = $.extend(renderers, renderOptions);
+
+    defaults = $.extend(defaults, config);
+
+    init();
+
+    // Sets all the functions that will be available
+    return ret;
+
+  }
+   
  })(jQuery)
+/*
+*/
