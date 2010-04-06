@@ -5,6 +5,7 @@ var TextEditor = Class.extend({
   'editor': null,
   'id': null,
   'div': null,
+  'type': 'input:text',
   /**
    * Constructor
    * @param String id
@@ -12,7 +13,7 @@ var TextEditor = Class.extend({
   'init': function(id) {
     this.id = '#' + id;
     this.div = $(this.id);
-    this.editor = this.div.find("input:text");
+    this.editor = this.div.find(this.type);
     this.setEvents();
   },
   /**
@@ -53,7 +54,10 @@ var TextEditor = Class.extend({
        */
       'keydown': function(e) {
         base.setKeyEvents(e);
-        //e.stopPropagation();
+        if(e.keyCode == jQuery.ui.keyCode.TAB) {
+          e.stopPropagation();
+          return false;
+        }
       },
       'keyup': function(e) {
         e.stopPropagation();
@@ -67,13 +71,10 @@ var TextEditor = Class.extend({
    * Sets the key events for the input:text
    */
   'setKeyEvents': function(e) {
-      console.log("Key:%s; UI: %s",e.keyCode, $.ui.keyCode.TAB);///////////////////
     switch(e.keyCode){
       case jQuery.ui.keyCode.TAB:
-        $(this.id).trigger("tab", [this.getValue(), this.renderer()]);
-        $(this.id).hide();
-        e.stopPropagation();
-        return false;
+        this.div.trigger("tab", [this.getValue(), this.renderer()]);
+        this.div.hide();
       break;
       case jQuery.ui.keyCode.ENTER:
         $(this.id).trigger("enter", [this.getValue(), this.renderer()]);
@@ -102,8 +103,9 @@ var TextEditor = Class.extend({
 
 
 
-TextAreaEditor = function() {
-  var $textarea = '<div style="position:absolute"><textarea></textarea></div>';
-
-  return $textarea;
-}
+/**
+ * Just and extension of the original TextEditor
+ */
+TextAreaEditor = TextEditor.extend({
+  'type': 'textarea'
+});

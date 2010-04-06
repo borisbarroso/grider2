@@ -121,8 +121,29 @@
      */
     function setEditorEvent(editor) {
       $(editor).bind({
-        'execute': function() { console.log(arguments); }
+        'execute': function() { console.log(arguments); },
+        'tab': function(e, value, text) {
+          setValueText(value, text);
+          changeToNextField();
+        }
       });
+    }
+
+    /**
+     * Sets the value and text for the current cell
+     */
+    function setValueText(value, text) {
+      $('div', {
+          'innerHTML': value,
+       });
+      $sel.html(value);
+    }
+
+    /**
+     * Changes to the next field
+     */
+    function changeToNextField() {
+      console.log($sel.next() ); ///////////
     }
 
     /**
