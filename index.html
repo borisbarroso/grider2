@@ -44,9 +44,11 @@
   }
 </style>
 
+<script type="text/javascript" src="javascript/class.js"></script> 
 <script type="text/javascript" src="javascript/jquery-1.4.2.js"></script> 
 <script type="text/javascript" src="javascript/jquery.ui.core.js"></script> 
 <script type="text/javascript" src="javascript/jquery.ui.ufd.js--"></script> 
+<script type="text/javascript" src="javascript/editors.js"></script> 
 <script type="text/javascript" src="javascript/jquery.grider2.js"></script> 
 <script type="text/javascript" src="javascript/qunit/qunit.js"></script> 
 <script type="text/javascript" src="javascript/test.js"></script> 
@@ -110,26 +112,26 @@
     </table> 
 
     <!-- Aqui se define el tipo de datos para el formulario -->
-    <div id="nameEditor" class="griderEditor">
+    <div id="nameEditor" class="griderEditor" type="TextEditor">
       <input type="text" name="user[#{}][name]" />
     </div>
-    <div id="priceEditor" class="griderEditor">
+    <div id="priceEditor" class="griderEditor" type="TextEditor">
       <input type="text" id="user_price" name="user[#{}][price]" />
     </div>
 
-    <div id="quantityEditor" class="griderEditor">
+    <div id="quantityEditor" class="griderEditor" type="TextEditor">
       <input type="text" id="user_price" name="user[#{}][quantity]" />
     </div>
 
-    <div id="descriptionEditor" class="griderEditor">
+    <div id="descriptionEditor" class="griderEditor" type="TextEditor">
       <textarea id="user_description" name="user[#{}][description]"></textarea>
     </div>
 
-    <div id="dateEditor" class="griderEditor">
+    <div id="dateEditor" class="griderEditor" type="TextEditor">
       <input type="text" id="user_price" name="user[#{}][date]" />
     </div>
 
-    <div id="stateEditor" class="griderEditor">
+    <div id="stateEditor" class="griderEditor" type="TextEditor">
       <select id="user_state" name="user[#{}][state]">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
@@ -194,6 +196,7 @@
 	<h2 id="qunit-userAgent"></h2>
 	<ol id="qunit-tests"></ol>
 
+  <input type="text" id="test" />
 </body> 
 <script>
   $(document).ready(function() {

@@ -26,6 +26,8 @@
     var ret = {};
 
     var $table = $(table);
+    // Global selected cell variable
+    var $sel;
     // settings
     var defaults = {
       'selectedCellClass': 'selected'
@@ -46,7 +48,8 @@
     function init() {
       setRows();
       setColumns();
-      setEditorEvents();
+      setGridEvents();
+      createEditors();
     }
 
     /**
@@ -83,36 +86,43 @@
     }
 
     /**
-     * set editor events
+     * Set the event for the grid
      */
-    function setEditorEvents() {
-      // Selection
-      var $sel;
-      var col;
-      $("td.editable").live("mousedown", function() {
+    function setGridEvents() {
+      $table.find("td.editable").live("mousedown", function() {
         $sel = $(this);
         setSelectedCell($sel);
-        col = $sel.attr("col");
+      }).live("click", function(e) {
+        var editor = columns[$(this).attr("col")].editor;
+        $('#' + editor).trigger("focus", [this, 33]); // Should return value form the cell if it has one
       });
-
-      $("td.editable").live("click", function() {
-        $(".griderEditor").hide();
-        setEditorPosition(col);
-        $('#' + columns[col].editor).show();
-      });
-      
-      $(document).keyup(function(e) { navigateCells(e) });
 
     }
 
     /**
-     * Sets the position on the editor
-     * @param String col
+     * Creates the editor based on the attribute "type" from the editor
      */
-    function setEditorPosition(col) {
-      $div = $('#' + columns[col].editor);
-      pos = $("td.selected").position();
-      $div.css({left:pos.left, top:pos.top});
+    function createEditors() {
+      for(var k in columns) {
+        if(columns[k].editor) {
+          var $divEditor = $('#' + columns[k].editor);
+          var editorID = columns[k].editor;
+          var evalText = 'new ' + $divEditor.attr("type") + '("' + editorID + '")';
+          columns[k]['editorObject'] = eval(evalText);
+          setEditorEvent($divEditor);
+        }
+      }
+
+      $(document).keyup(function(e) { navigateCells(e) });
+    }
+
+    /**
+     * Sets the event t listen from a editor
+     */
+    function setEditorEvent(editor) {
+      $(editor).bind({
+        'execute': function() { console.log(arguments); }
+      });
     }
 
     /**
@@ -150,15 +160,6 @@
         break;
         case $.ui.keyCode.RIGHT:
           console.log("right");
-        break;
-        case $.ui.keyCode.TAB:
-          console.log("tab");
-        break;
-        case $.ui.keyCode.ENTER:
-          console.log("enter");
-        break;
-        case $.ui.keyCode.ESC:
-          console.log("esc");
         break;
       }
     }
