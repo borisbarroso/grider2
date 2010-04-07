@@ -46,6 +46,7 @@
      * Constructor function
      */
     function init() {
+      $table.addClass("grider");
       setRows();
       setColumns();
       setGridEvents();
@@ -61,7 +62,7 @@
         if(col == null || col == undefined) {
           col = (new Date()).getTime();
         }
-        var hash = {'pos': i, 'width': $(el).width()};
+        var hash = {'pos': i, 'width': $(el).css("width") || $(el).width()};
 
         // set the editor
         var editor = $(el).attr("editor");
@@ -94,9 +95,18 @@
         setSelectedCell($sel);
       }).live("click", function(e) {
         var editor = columns[$(this).attr("col")].editor;
-        $('#' + editor).trigger("focus", [this, 33]); // Should return value form the cell if it has one
+        $('#' + editor).trigger("focus", [this, getCellValue(this)]); // Should return value form the cell if it has one
       });
 
+    }
+
+    /**
+     * Returns the value inside a custom input
+     * @param DOM TD
+     * @return String
+     */
+    function getCellValue(node) {
+      return $(node).find("input:text").val();
     }
 
     /**
@@ -107,6 +117,9 @@
         if(columns[k].editor) {
           var $divEditor = $('#' + columns[k].editor);
           var editorID = columns[k].editor;
+          var type = $divEditor.attr("type");
+          if(type == undefined || type == null)
+            throw("You must set the type for editor: " + editorID);
           var evalText = 'new ' + $divEditor.attr("type") + '("' + editorID + '")';
           columns[k]['editorObject'] = eval(evalText);
           setEditorEvent($divEditor);
@@ -121,9 +134,18 @@
      */
     function setEditorEvent(editor) {
       $(editor).bind({
-        'execute': function() { console.log(arguments); },
-        'tab': function(e, value, text) {
-          setValueText(value, text);
+        ////
+        // Event excuted when pressend ENTER
+        // @param Event e
+        // @param String value // the value stored in the input:text field
+        // @param String rendered // The format in whick the text has to be presented
+        // @param String dataNameFormat // Format for the input master[detail_attributes][0][property], the 0 will be replaced
+        'enter': function(e, value, rendered, dataNameFormat){ 
+          setValueAndText(value, rendered, dataNameFormat);
+          console.log(arguments); 
+        },
+        'tab': function(e, value, rendered, dataNameFormat) {
+          setValueAndText(value, rendered, dataNameFormat);
           changeToNextField();
         }
       });
@@ -131,11 +153,22 @@
 
     /**
      * Sets the value and text for the current cell
+     * @param String value
+     * @param String rendered
+     * @param String dataNameFormat
      */
-    function setValueText(value, text) {
-      $('div', {
-          'innerHTML': value,
-       });
+    function setValueAndText(value, rendered, dataNameFormat) {
+      var input = $sel.find("input:text");
+      if(input.length > 0) {
+        $(input).val(value);
+        $sel.find("span.displayFormat").html(rendered);
+      }else{
+        var uid = new Date().getTime();
+        var dataNameFormat = dataNameFormat.replace("{id}", uid);
+        var input = '<input type="text" name="{name}" value="{value}" />'.replace("{name}", dataNameFormat).replace("{value}", value);
+        var html = '<div>' + input +'</div><span class="renderer">' + rendered + '</span>';
+        $sel.html(html);
+      }
       $sel.html(value);
     }
 

@@ -24,17 +24,13 @@
     border: 1px solid #303030;
   }
 
+  table.grider td.editable div{ display:none }
+
   td.selected {background: #EFEFEF; }
 
   tr { height: 22px; }
 
-  table.grider-table td div{
-    height: 13px;
-    padding: 3px 3px 3px 5px;
-    font-size: 13px;
-    overflow: hidden;
-  }
-
+  
   div input, table textarea, table select{
     font-size: 13px;
     border: 2px solid grey;
@@ -75,64 +71,64 @@
       
       <tr class="edit">
         <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
+        <td><div><input type="text" name="user[test_attributes][0][name]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][0][description]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][0][price]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][0][quantity]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][0][state]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][0][date]" value="" /></div><span class="displayFormat"></span></td>
         <td><div></div></td>
       </tr>
       <input type="hidden" id="user[test_attributes][0][id]" value="1" />
 
       <tr class="edit">
         <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
+        <td><div><input type="text" name="user[test_attributes][1][name]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][1][description]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][1][price]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][1][quantity]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][1][state]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][1][date]" value="" /></div><span class="displayFormat"></span></td>
         <td><div></div></td>
       </tr>
       <input type="hidden" id="user[test_attributes][1][id]" value="2" />
 
       <tr class="edit">
         <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
-        <td><div></div></td>
+        <td><div><input type="text" name="user[test_attributes][2][name]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][2][description]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][2][price]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][2][quantity]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][2][state]" value="" /></div><span class="displayFormat"></span></td>
+        <td><div><input type="text" name="user[test_attributes][2][date]" value="" /></div><span class="displayFormat"></span></td>
         <td><div></div></td>
       </tr>
-      <input type="hidden" id="user[test_attributes][1][id]" value="3" />
+      <input type="hidden" id="user[test_attributes][2][id]" value="3" />
 
     </table> 
 
     <!-- Aqui se define el tipo de datos para el formulario -->
     <div id="nameEditor" class="griderEditor" type="TextEditor">
-      <input type="text" name="user[#{}][name]" />
+      <input type="text" data-name-format="user[test_attributes][{id}][name]" />
     </div>
     <div id="priceEditor" class="griderEditor" type="TextEditor">
-      <input type="text" id="user_price" name="user[#{}][price]" />
+      <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][price]" />
     </div>
 
     <div id="quantityEditor" class="griderEditor" type="TextEditor">
-      <input type="text" id="user_price" name="user[#{}][quantity]" />
+      <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][quantity]" />
     </div>
 
     <div id="descriptionEditor" class="griderEditor" type="TextAreaEditor">
-      <textarea id="user_description" name="user[#{}][description]"></textarea>
+      <textarea id="user_description" data-name-format="user[test_attributes][{id}][description]"></textarea>
     </div>
 
     <div id="dateEditor" class="griderEditor" type="TextEditor">
-      <input type="text" id="user_price" name="user[#{}][date]" />
+      <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][date]" />
     </div>
 
-    <div id="stateEditor" class="griderEditor" type="TextEditor">
-      <select id="user_state" name="user[#{}][state]">
+    <div id="stateEditor" class="griderEditor" type="TextEditor" data-name-format="TextEditor">
+      <select id="user_state" data-name-format="user[test_attributes][{id}][state]">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
         <option value="AZ">Arizona</option>

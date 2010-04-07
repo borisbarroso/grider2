@@ -23,35 +23,36 @@ var TextEditor = Class.extend({
     this.editor.get()[0].focus();
   },
   /**
+   *
+   */
+  'setEditorValue': function(value) {
+    this.editor.val(value);
+  },
+  /**
    * function that sets the events for the class
    */
   'setEvents': function() {
     var base = this;
 
-    /*$(this.id).bind("focus", function() {
-      console.log("obj: %o", arguments)
-    });*/
-    /**
-     * div events
-     */
+    ////
+    // div events
     this.div.bind({
-      /**
-       * Actives when focus
-       */
+      ////
+      // Actives when focus
       'focus': function(e, placeholder, value) {
+        $('.griderEditor').hide();
         var pos = $(placeholder).position();
         base.div.css({left:pos.left, top:pos.top}).show();
+        base.setEditorValue(value);
         base.setEditorFocus();
       }
     });
 
-    /**
-     * Editor events
-     */
+    ////
+    // Editor events
     this.editor.bind({
-      /**
-       * set all the events for keys
-       */
+      ////
+      // set all the events for keys
       'keydown': function(e) {
         base.setKeyEvents(e);
         if(e.keyCode == jQuery.ui.keyCode.TAB) {
@@ -73,15 +74,14 @@ var TextEditor = Class.extend({
   'setKeyEvents': function(e) {
     switch(e.keyCode){
       case jQuery.ui.keyCode.TAB:
-        this.div.trigger("tab", [this.getValue(), this.renderer()]);
+        this.div.trigger("tab", [this.getValue(), this.renderer(), this.editor.attr("data-name-format")]);
         this.div.hide();
       break;
       case jQuery.ui.keyCode.ENTER:
-        $(this.id).trigger("enter", [this.getValue(), this.renderer()]);
+        this.div.trigger("enter", [this.getValue(), this.renderer(), this.editor.attr("data-name-format")]);
       break;
-      case jQuery.ui.keyCode.ESC:
-        $(this.id).trigger("esc", [this.getValue(), this.renderer()]);
-        $(this.id).hide();
+      case jQuery.ui.keyCode.ESCAPE:
+        this.div.hide();
       break;
     }
   },

@@ -55,6 +55,31 @@ jQuery(document).ready(function($) {
       equals( $("td.selected").length, 1);
     });
 
+    function findVisibleEditor() {
+      return jQuery('.griderEditor').filter(function(index){ 
+        return jQuery(this).css("display") == "block";
+      });
+    }
+
+    module("Test editor");
+
+    test("show editor", function() {
+      $table.find("td.editable:first").trigger("click");
+      var editor = findVisibleEditor();
+      equals(editor.attr("id"), "nameEditor", "Should be set the nameEditor");
+      $table.find("td.editable:eq(1)").trigger("click");
+
+      editor = findVisibleEditor();
+      equals(editor.length, 1, "only one editor should be displayed");
+    });
+
+    module("Test keys");
+
+    test("test ESC", function() {
+      editor = findVisibleEditor();
+      editor.find("textarea, input, select").trigger("keydown", $.ui.keyCode.ESCAPE);
+    });
+
 /*
     test("test tr", function() {
         ok( $table.hasClass(Grider.defaults.griderTableClass), "default table class");
