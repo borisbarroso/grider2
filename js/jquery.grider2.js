@@ -9,7 +9,6 @@
 (function($) {
   $.fn.extend({
     'grider': function(config, renderOptions) {
-      var grids = [];
       return new Grider(this, config, renderOptions);
     }
   });
@@ -30,17 +29,14 @@
     var $sel;
     // settings
     var defaults = {
-      'selectedCellClass': 'selected'
-    };
+      'selectedCellClass': 'selected',
+      'noEditClass': 'noEdit'
+    }
 
     defaults = $.extend(defaults, config);
 
     var columns = {};
     ret['columns'] = columns;
-
-    // const
-    
-    // private
 
     /**
      * Constructor function
@@ -62,21 +58,21 @@
         if(col == null || col == undefined) {
           col = (new Date()).getTime();
         }
-        var hash = {'pos': i, 'width': $(el).css("width") || $(el).width()};
+        var hash = {'pos': i, 'width': parseInt( $(el).css("width") ) || $(el).width()} ;
 
         // set the editor
         var editor = $(el).attr("editor");
         if(editor != null && editor != undefined) {
           hash['editor'] = editor;
-          $table.find("td:nth-child(" + (i + 1) + ")").addClass("editable").attr("col", col);
+          $table.find("td:nth-child(" + (i + 1) + ")").addClass("editable").attr("col", col).css({'width': hash.width + 'px'});
           $editor = $('#' + editor);
 
           if( $editor.length <= 0)
             throw('You need to create an editor:"' +  + '" for the column "' + col + '"');
-          else {
-            $editor.hide().css("position", "absolute");
-            $editor.find("input:text, textarea, select").css("width", hash.width);
-          }
+          //else {
+            //$editor.hide().css("position", "absolute");
+            //$editor.find("input:text, textarea, select").css("width", hash.width);
+          //}
         }else{
           $table.find("td:nth-child(" + (i + 1) + ")").attr("col", col);
         }
@@ -95,7 +91,7 @@
         setSelectedCell($sel);
       }).live("click", function(e) {
         var editor = columns[$(this).attr("col")].editor;
-        $('#' + editor).trigger("focus", [this, getCellValue(this)]); // Should return value form the cell if it has one
+        $('#' + editor).trigger("focus", [this, getCellValue(this)]);
       });
 
     }
@@ -115,14 +111,19 @@
     function createEditors() {
       for(var k in columns) {
         if(columns[k].editor) {
-          var $divEditor = $('#' + columns[k].editor);
+          var $containerEditor = $('#' + columns[k].editor);
           var editorID = columns[k].editor;
-          var type = $divEditor.attr("type");
-          if(type == undefined || type == null)
+          var dataEditor = $containerEditor.attr("data-editor");
+          /*if(dataEditor == undefined || dataEditor == null)
             throw("You must set the type for editor: " + editorID);
-          var evalText = 'new ' + $divEditor.attr("type") + '("' + editorID + '")';
-          columns[k]['editorObject'] = eval(evalText);
-          setEditorEvent($divEditor);
+          */
+          var evalText = 'new ' + $containerEditor.attr("data-editor") + '("' + editorID + '", ' + columns[k].width+ ')';
+          try{
+            columns[k]['editorObject'] = eval(evalText);
+          }catch(e) {
+            throw("there is not a class:" + $containerEditor.attr("data-editor") + " for editor: " + editorID + "; Line 124");
+          }
+          setEditorEvent($containerEditor);
         }
       }
 
@@ -141,12 +142,11 @@
         // @param String rendered // The format in whick the text has to be presented
         // @param String dataNameFormat // Format for the input master[detail_attributes][0][property], the 0 will be replaced
         'enter': function(e, value, rendered, dataNameFormat){ 
-          setValueAndText(value, rendered, dataNameFormat);
-          console.log(arguments); 
+          setValueAndText(value, rendered);
         },
         'tab': function(e, value, rendered, dataNameFormat) {
-          setValueAndText(value, rendered, dataNameFormat);
-          changeToNextField();
+          setValueAndText(value, rendered);
+          changeToNextField(e);
         }
       });
     }
@@ -157,26 +157,25 @@
      * @param String rendered
      * @param String dataNameFormat
      */
-    function setValueAndText(value, rendered, dataNameFormat) {
+    function setValueAndText(value, rendered) {
+     console.log("Input: %o, %s", $sel.find("input:text"), value);
       var input = $sel.find("input:text");
-      if(input.length > 0) {
-        $(input).val(value);
-        $sel.find("span.displayFormat").html(rendered);
-      }else{
-        var uid = new Date().getTime();
-        var dataNameFormat = dataNameFormat.replace("{id}", uid);
-        var input = '<input type="text" name="{name}" value="{value}" />'.replace("{name}", dataNameFormat).replace("{value}", value);
-        var html = '<div>' + input +'</div><span class="renderer">' + rendered + '</span>';
-        $sel.html(html);
-      }
-      $sel.html(value);
+      $(input).val(value);
+      $sel.find("span.displayFormat").html(rendered);
     }
 
     /**
      * Changes to the next field
+     * @param Event e
      */
-    function changeToNextField() {
-      console.log($sel.next() ); ///////////
+    function changeToNextField(e) {
+      console.log(e);
+      $sel = $sel.next("td.editable");
+      if($sel.length  < 1) {
+        $sel = $sel.parent("tr.griderRow").siblings("tr:first").find("td.editable:first");
+      }
+      setSelectedCell($sel);
+      $sel.trigger("click");
     }
 
     /**
@@ -224,6 +223,9 @@
     function setRows() {
       $table.find("tr").each(function(i, el) {
         $(el).attr("row", i);
+        if(i > 0 && !$(el).hasClass(defaults.noEditClass)) {
+          $(el).addClass("griderRow");
+        }
       });
     }
 
@@ -251,5 +253,3 @@
   }
    
  })(jQuery)
-/*
-*/

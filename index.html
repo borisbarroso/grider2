@@ -5,7 +5,7 @@
   <meta http-equiv="content-type" content="text/html;charset=utf-8" /> 
   <title>Grider 2</title> 
   <link rel="Stylesheet" href="/stylesheets/screen.css" type="text/css" media="screen" /> 
-  <link rel="Stylesheet" href="javascript/qunit/qunit.css" type="text/css" media="screen" /> 
+  <link rel="Stylesheet" href="js/qunit/qunit.css" type="text/css" media="screen" /> 
 </head> 
 <style>
   body{
@@ -33,21 +33,25 @@
   
   div input, table textarea, table select{
     font-size: 13px;
-    border: 2px solid grey;
+    border: 1px solid grey;
   }
   table textarea{
     height: 40px;
   }
+  .griderEditor input{ height: 17px; }
 </style>
 
-<script type="text/javascript" src="javascript/class.js"></script> 
-<script type="text/javascript" src="javascript/jquery-1.4.2.js"></script> 
-<script type="text/javascript" src="javascript/jquery.ui.core.js"></script> 
-<script type="text/javascript" src="javascript/jquery.ui.ufd.js--"></script> 
-<script type="text/javascript" src="javascript/editors.js"></script> 
-<script type="text/javascript" src="javascript/jquery.grider2.js"></script> 
-<script type="text/javascript" src="javascript/qunit/qunit.js"></script> 
-<script type="text/javascript" src="javascript/test.js"></script> 
+<script type="text/javascript" src="js/class.js"></script> 
+<script type="text/javascript" src="js/jquery-1.4.2.js"></script> 
+<script type="text/javascript" src="js/jquery.ui.core.js"></script> 
+<script type="text/javascript" src="js/jquery.ui.widget.js"></script> 
+<!-- Grider -->
+<script type="text/javascript" src="js/editors.js"></script> 
+<script type="text/javascript" src="js/jquery.grider2.js"></script> 
+<!--ufd-->
+<script type="text/javascript" src="js/jquery.ui.ufd.js"></script> 
+<!-- Test-->
+<script type="text/javascript" src="js/qunit/qunit.js"></script> 
 
 
 <link rel="stylesheet" href="css/ufd/ufd-base.css"></link>
@@ -69,7 +73,7 @@
         <th style="width:100px" col="subtotal" formula="nombre*rol" summary="sum">Subtotal</th>
       </tr>
       
-      <tr class="edit">
+      <tr>
         <td><div></div></td>
         <td><div><input type="text" name="user[test_attributes][0][name]" value="" /></div><span class="displayFormat"></span></td>
         <td><div><input type="text" name="user[test_attributes][0][description]" value="" /></div><span class="displayFormat"></span></td>
@@ -81,7 +85,7 @@
       </tr>
       <input type="hidden" id="user[test_attributes][0][id]" value="1" />
 
-      <tr class="edit">
+      <tr>
         <td><div></div></td>
         <td><div><input type="text" name="user[test_attributes][1][name]" value="" /></div><span class="displayFormat"></span></td>
         <td><div><input type="text" name="user[test_attributes][1][description]" value="" /></div><span class="displayFormat"></span></td>
@@ -93,7 +97,7 @@
       </tr>
       <input type="hidden" id="user[test_attributes][1][id]" value="2" />
 
-      <tr class="edit">
+      <tr>
         <td><div></div></td>
         <td><div><input type="text" name="user[test_attributes][2][name]" value="" /></div><span class="displayFormat"></span></td>
         <td><div><input type="text" name="user[test_attributes][2][description]" value="" /></div><span class="displayFormat"></span></td>
@@ -108,27 +112,27 @@
     </table> 
 
     <!-- Aqui se define el tipo de datos para el formulario -->
-    <div id="nameEditor" class="griderEditor" type="TextEditor">
+    <div id="nameEditor" data-editor="TextEditor">
       <input type="text" data-name-format="user[test_attributes][{id}][name]" />
     </div>
-    <div id="priceEditor" class="griderEditor" type="TextEditor">
+    <div id="priceEditor" class="griderEditor" data-editor="TextEditor">
       <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][price]" />
     </div>
 
-    <div id="quantityEditor" class="griderEditor" type="TextEditor">
+    <div id="quantityEditor" class="griderEditor" data-editor="TextEditor">
       <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][quantity]" />
     </div>
 
-    <div id="descriptionEditor" class="griderEditor" type="TextAreaEditor">
+    <div id="descriptionEditor" class="griderEditor" data-editor="TextAreaEditor">
       <textarea id="user_description" data-name-format="user[test_attributes][{id}][description]"></textarea>
     </div>
 
-    <div id="dateEditor" class="griderEditor" type="TextEditor">
+    <div id="dateEditor" class="griderEditor" data-editor="TextEditor">
       <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][date]" />
     </div>
 
-    <div id="stateEditor" class="griderEditor" type="TextEditor" data-name-format="TextEditor">
-      <select id="user_state" data-name-format="user[test_attributes][{id}][state]">
+    <div id="stateEditor" class="griderEditor" data-editor="ComboEditor" data-name-format="TextEditor">
+      <select id="user_test_attributes_state" data-name-format="user[test_attributes][{id}][state]">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
         <option value="AZ">Arizona</option>
@@ -192,83 +196,28 @@
 	<h2 id="qunit-userAgent"></h2>
 	<ol id="qunit-tests"></ol>
 
-  <input type="text" id="test" />
+      <select id="test_ufd" name="test_ufd">
+        <option value="LP">La Paz</option>
+        <option value="SCZ">Santa Cruz</option>
+        <option value="CBB">Cochabamba</option>
+        <option value="OR">Oruro</option>
+        <option value="POT">Potosí</option>
+        <option value="CHU">Chuquisaca</option>
+        <option value="TJ">Tarija</option>
+        <option value="BN">Beni</option>
+        <option value="PA">Pando</option>
+      </select>
 </body> 
 <script>
   $(document).ready(function() {
-
-    /**
-    * Tests para qunit
-    */
-
-    // UFD
-    /*$('#usuario_estado').ufd({'manualWidth': 150})
-    .change(function() {
-      $('div.editable').html($(this).siblings('input:text').val()).removeClass("editable");
-    });*/
-
-
-    $('input:text[name=_ufd]').blur(function() {
-      $(this).parents('div.grider-control').hide();
-    });
+    if(!window.console.firebug) {
+      $.getScript("js/firebug-lite-compressed.js");
+    }
+    $('#test_ufd').ufd();
 
     // Creacion de grider
     grider1 = $('#grid1').grider();
-/*
-    if($.browser.safari) {
-      var h = 3;
-    }else{
-      var h = 2;
-    }
 
-    var inputs = {'usuario_nombre': 'text', 'usuario_rol': 'select'};
-
-    // Definir dimensiones
-    $('table tr:eq(1) td div.edit').each(function(i, el) {
-      var name;
-      if(name = $(el).attr("name")){
-        var w = $(el).width() + 7;
-        $('div.grider-control.' + name).find("input, textarea").css({'width': w});
-      }
-    });
-
-    
-    // Ocultar y posicion absoluta
-    $('div.grider-control').css({'position': 'absolute'}).hide();
-
-    // Evento cuando se hace click
-    $('td div.edit').live("click", function() {
-      var pos = $(this).position();
-      var name = $(this).attr("name");
-
-      var $div = $('div.grider-control.' + name);
-
-      $div.css({top: pos.top - h, left: pos.left - 2}).show();
-
-      $div.find('input, select, textarea').val($(this).html()).focus();
-      $(this).addClass("editable");
-    });
-
-    // Evento cuando se pierde de foco
-    //$('div.grider-control input, div.grider-control textarea, div.grider-control select') // Modificado para UFD
-    $('div.grider-control>input, div.grider-control>textarea, div.grider-control>select').blur(function() { 
-      $('div.editable').html($(this).val()).removeClass('editable');
-      $(this).parents('div.grider-control').hide();
-    }).keydown(function(e) {
-      if(e.keyCode == $.ui.core.keyCode.ESCAPE) {
-        $(this).trigger("blur");
-      }
-    });
-
-
-    var html = '';
-    for(k in $.browser){
-      html += k + ': ';
-      html += $.browser[k] + '<br />';
-    }
-    $('#browser').html(html);
-      
-*/
   });
 </script>
 </html>
