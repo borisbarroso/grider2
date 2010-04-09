@@ -9,6 +9,7 @@ var TextEditor = Class.extend({
   'containerCSS': 'griderEditor', // CSS class of the DIV, P or anything that contains the editor field
   'containerCSSActive': 'griderActiveEditor', // Indicates when the editor is active
   'isFocus': false,
+  'placeholder': null,
   /**
    * Constructor
    * @param String id
@@ -25,14 +26,7 @@ var TextEditor = Class.extend({
    * sets the editor focus for the current editor, might deppend on the editor created
    */
   'setEditorFocus': function() {
-    this.isFocus = true;
-    var base = this;
-    // Hack for IE
-    if($.browser.msie) {
-      setTimeout( function () { base.editor.get()[0].focus();}, 50);
-    }else{
-      base.editor.get()[0].focus();
-    }
+    base.editor.get()[0].focus();
   },
   /**
    *
@@ -51,7 +45,8 @@ var TextEditor = Class.extend({
     this.container.bind({
       ////
       // Actives when focus
-      'focus': function(e, placeholder, value) {
+      'show': function(e, placeholder, value) {
+        base.placeholder = placeholder;
         $(base.containerCSSActive).trigger("hide");
         var pos = $(placeholder).position();
         // Set position and activate
@@ -60,9 +55,11 @@ var TextEditor = Class.extend({
         base.setEditorFocus();
       },
       // Hide the editor container
-      'hide': function() {
+      'hide': function(e) {
         base.container.hide();
-        base.isFocus = false
+      },
+      'blur': function(e) {
+        base.container.hide();
       }
     });
 
@@ -82,9 +79,16 @@ var TextEditor = Class.extend({
         e.stopPropagation();
       },
       'blur': function(e) {
+        base.container.trigger("enter", [base.getValue(), base.renderer(), base.placeholder] );
         base.container.trigger("hide");
       }
     });
+  },
+  /**
+   * 
+   */
+  'setEditorFocus': function() {
+    this.editor.get()[0].focus();
   },
   /**
    * Sets the Editor size
@@ -142,79 +146,47 @@ TextAreaEditor = TextEditor.extend({
   'setEditorSize': function(width) {
     this.editor.css({'width': width + 'px'});
   }
+
 });
 
 
 /**
  * For select fields
  */
-SelectFieldEditor = TextEditor.extend({
-  'type': 'select'
-});
-
-/**
- * For select fields with autocomplete
- */
-ComboEditor = TextEditor.extend({
-  'type': 'input:text',
-  'originalEditorWidth': null,
-  'isFocus': false, // Indicates if it has been focused
-  'combo': null,
-  'comboID': null,
-  'init': function(id, width) {
-    this.id = '#' + id;
-    this.container = $(this.id);
-    this.container.addClass(this.containerCSS).css({'position':'absolute'}).hide();
-    this.editor = this.container.find('select');
-    this.originalEditorWidth = this.editor.width();
-    this.setEditorSize(width);
-    // ufd
-    this.editor.ufd();//{'allowLR': true});
-    this.comboID = this.editor.attr("id") + "_ufd";
-    this.combo = $('#' + this.comboID);
-    //$('#ufd-container ul:last').css({'width', this.originalEditorWidth + 'px'});
-    this.setEvents();
-  },
-  /**
-   * Sets the editor container width
-   */
-  'setContainerWidth': function(width) {
-    this.container.css({'position': 'absolute', 'width': width + 'px'});
-  },
-  /**
+SelectEditor = TextEditor.extend({
+  'type': 'select',
+  /*
    * function that sets the events for the class
    */
   'setEvents': function() {
     var base = this;
+
     ////
     // container events
     this.container.bind({
       ////
       // Actives when focus
-      'focus': function(e, placeholder, value) {
-      //console.log("focus %o", arguments);
-        // return false if the container is focused
-        if(base.isFocus)
-          return false;
-
-        console.log("focus");/////////
-        $('.griderEditor').hide();
+      'show': function(e, placeholder, value) {
+        base.placeholder;
+        $(base.containerCSSActive).trigger("hide");
         var pos = $(placeholder).position();
-        base.container.css({'left':pos.left, 'top':pos.top}).show();
+        // Set position and activate
+        base.container.css({'left': pos.left, 'top': pos.top}).addClass(base.containerCSSActive).show();
         base.setEditorValue(value);
         base.setEditorFocus();
-        this.isFocus = true;
       },
-      'hide': function() {
-      console.log("hide combo");///
-        base.isFocus = false;
+      // Hide the editor container
+      'hide': function(e) {
+        base.container.hide();
+      },
+      'blur': function(e) {
         base.container.hide();
       }
     });
 
     ////
     // Editor events
-    this.combo.bind({
+    this.editor.bind({
       ////
       // set all the events for keys
       'keydown': function(e) {
@@ -228,36 +200,12 @@ ComboEditor = TextEditor.extend({
         e.stopPropagation();
       },
       'blur': function(e) {
-      //console.log("combo blur %o, Combo: %o, %s", e.target.id, base.combo.attr("id"), base.comboID );
-      console.log(arguments);
-        var target = e.target || e.srcElement;
-        if(target.id == base.comboID) {
-          console.log("NO era");
-          e.stopPropagation();
-          return false;
-        }
-        base.container.hide();
+        base.container.trigger("hide");
+      },
+      'change': function(e) {
+        base.container.trigger("enter", [base.getValue(), base.renderer()] );
       }
     });
-  },
-  /**
-   * Sets the key events for the input:text
-   */
-  'setKeyEvents': function(e) {
-    switch(e.keyCode){
-      case jQuery.ui.keyCode.TAB:
-        console.log(this.getValue());
-        this.container.trigger("tab", [this.getValue(), this.renderer()] );
-        this.isFocus = false;
-        this.container.hide();
-      break;
-      case jQuery.ui.keyCode.ENTER:
-        this.container.trigger("enter", [this.getValue(), this.renderer()] );
-      break;
-      case jQuery.ui.keyCode.ESCAPE:
-        this.container.hide();
-      break;
-    }
   },
   /**
    * Gets the value from the current editor
@@ -269,7 +217,10 @@ ComboEditor = TextEditor.extend({
    * Function that renders the values of the editor
    */
   'renderer': function() {
-    console.log($(this.editor.attr("id")).ufd("getCurrentTextValue"));
     return this.editor.find("option[value=" + this.editor.val() + "]").text();
+  },
+  'setEditorFocus': function() {
+    this.editor.trigger("click");
   }
 });
+

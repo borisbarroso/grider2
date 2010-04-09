@@ -89,9 +89,18 @@
       $table.find("td.editable").live("mousedown", function() {
         $sel = $(this);
         setSelectedCell($sel);
+        var editor = columns[$(this).attr("col")].editor;
+        $('#' + editor).trigger("hide");//, [getCellValue(this)]);
       }).live("click", function(e) {
         var editor = columns[$(this).attr("col")].editor;
-        $('#' + editor).trigger("focus", [this, getCellValue(this)]);
+        $('#' + editor).trigger("show", [this, getCellValue(this)]);
+      });
+
+      // Tabl events
+      $table.bind({
+        'addRow': function() {
+            addNewRow();
+        }
       });
 
     }
@@ -140,11 +149,11 @@
         // @param Event e
         // @param String value // the value stored in the input:text field
         // @param String rendered // The format in whick the text has to be presented
-        // @param String dataNameFormat // Format for the input master[detail_attributes][0][property], the 0 will be replaced
-        'enter': function(e, value, rendered, dataNameFormat){ 
-          setValueAndText(value, rendered);
+        // @param DOM placeholder // Original cell send to the editor
+        'enter': function(e, value, rendered, placeholder){ 
+          setValueAndText(value, rendered, placeholder);
         },
-        'tab': function(e, value, rendered, dataNameFormat) {
+        'tab': function(e, value, rendered, placeholder) {
           setValueAndText(value, rendered);
           changeToNextField(e);
         }
@@ -156,12 +165,13 @@
      * @param String value
      * @param String rendered
      * @param String dataNameFormat
+     * @param DOM placeholder
      */
-    function setValueAndText(value, rendered) {
-     console.log("Input: %o, %s", $sel.find("input:text"), value);
-      var input = $sel.find("input:text");
+    function setValueAndText(value, rendered, placeholder) {
+      var selected = $(placeholder || $sel);
+      var input = selected.find("input:text");
       $(input).val(value);
-      $sel.find("span.displayFormat").html(rendered);
+      selected.find("span.displayFormat").html(rendered);
     }
 
     /**
@@ -169,7 +179,6 @@
      * @param Event e
      */
     function changeToNextField(e) {
-      console.log(e);
       $sel = $sel.next("td.editable");
       if($sel.length  < 1) {
         $sel = $sel.parent("tr.griderRow").siblings("tr:first").find("td.editable:first");
@@ -195,24 +204,24 @@
      * Funcion to navigate through cells
      */
     function navigateCells(e) {
-      if($(".griderEditor[style*=block]").length > 0)
+      if($("div.griderEditor[style*=block]").length > 0)
         return false;
 
       var $td = $table.find('.' + defaults.selectedCellClass);
       var col = $td.attr("col");
       switch(e.keyCode) {
         case $.ui.keyCode.DOWN:
-          console.log($td);
+          //console.log($td);
           setSelectedCell($td.parent("tr:first").next().find('td[col=' + col + ']') );
         break;
         case $.ui.keyCode.UP:
           setSelectedCell($td.parent("tr").previous().find('td[col=' + col + ']') );
         break;
         case $.ui.keyCode.LEFT:
-          console.log("left");
+          //console.log("left");
         break;
         case $.ui.keyCode.RIGHT:
-          console.log("right");
+          //console.log("right");
         break;
       }
     }
@@ -228,8 +237,27 @@
         }
       });
     }
+    
+    /**
+     * Adds a new line
+     */
+    function addNewRow() {
+      var tr = $table.find("tr.griderRow:first").clone();
+      var name = ["[", new Date().getTime(), "]"].join("");
+      tr.find("input:text").each(function(i, el) {
+        name = $(el).attr("name").replace(/\[\d+\]/, name);
+        $(el).attr("name", name);
+      });
+      $table.find("tr.griderRow:last").after(tr);
+    }
 
+    /**
+     * Deletes a row
+     */
+    function deleteRow(tr) {
+    }
 
+  
     /******************************************************
      * List of funtions used to render the display
      */

@@ -49,7 +49,7 @@
 <script type="text/javascript" src="js/editors.js"></script> 
 <script type="text/javascript" src="js/jquery.grider2.js"></script> 
 <!--ufd-->
-<script type="text/javascript" src="js/jquery.ui.ufd.js"></script> 
+<script type="text/javascript" src="js/jquery.ui.ufd.js--"></script> 
 <!-- Test-->
 <script type="text/javascript" src="js/qunit/qunit.js"></script> 
 
@@ -115,23 +115,23 @@
     <div id="nameEditor" data-editor="TextEditor">
       <input type="text" data-name-format="user[test_attributes][{id}][name]" />
     </div>
-    <div id="priceEditor" class="griderEditor" data-editor="TextEditor">
+    <div id="priceEditor" data-editor="TextEditor">
       <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][price]" />
     </div>
 
-    <div id="quantityEditor" class="griderEditor" data-editor="TextEditor">
+    <div id="quantityEditor" data-editor="TextEditor">
       <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][quantity]" />
     </div>
 
-    <div id="descriptionEditor" class="griderEditor" data-editor="TextAreaEditor">
+    <div id="descriptionEditor" data-editor="TextAreaEditor">
       <textarea id="user_description" data-name-format="user[test_attributes][{id}][description]"></textarea>
     </div>
 
-    <div id="dateEditor" class="griderEditor" data-editor="TextEditor">
+    <div id="dateEditor" data-editor="TextEditor">
       <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][date]" />
     </div>
 
-    <div id="stateEditor" class="griderEditor" data-editor="ComboEditor" data-name-format="TextEditor">
+    <div id="stateEditor" data-editor="SelectEditor" data-name-format="TextEditor">
       <select id="user_test_attributes_state" data-name-format="user[test_attributes][{id}][state]">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
@@ -213,7 +213,7 @@
     if(!window.console.firebug) {
       $.getScript("js/firebug-lite-compressed.js");
     }
-    $('#test_ufd').ufd();
+    //$('#test_ufd').ufd();
 
     // Creacion de grider
     grider1 = $('#grid1').grider();
