@@ -53,33 +53,7 @@
      * Defines columns and positions
      */
     function setColumns() {
-      $table.find("tr:first th").each(function(i, el) {
-        var col = $(el).attr("col");
-        if(col == null || col == undefined) {
-          col = (new Date()).getTime();
-        }
-        var hash = {'pos': i, 'width': parseInt( $(el).css("width") ) || $(el).width()} ;
 
-        // set the editor
-        var editor = $(el).attr("editor");
-        if(editor != null && editor != undefined) {
-          hash['editor'] = editor;
-          $table.find("td:nth-child(" + (i + 1) + ")").addClass("editable").attr("col", col).css({'width': hash.width + 'px'});
-          $editor = $('#' + editor);
-
-          if( $editor.length <= 0)
-            throw('You need to create an editor:"' +  + '" for the column "' + col + '"');
-          //else {
-            //$editor.hide().css("position", "absolute");
-            //$editor.find("input:text, textarea, select").css("width", hash.width);
-          //}
-        }else{
-          $table.find("td:nth-child(" + (i + 1) + ")").attr("col", col);
-        }
-        
-        columns[col] = hash;
-
-      });
     }
 
     /**
@@ -265,6 +239,9 @@
       dateRenderer: function(val) {
       },
       percentageRenderer: function(val) {
+      },
+      bold: function(val) {
+        return '<strong>' + val + '</strong>';
       }
     }
     
@@ -281,3 +258,5 @@
   }
    
  })(jQuery)
+
+

@@ -26,9 +26,13 @@
 
   table.grider td.editable div{ display:none }
 
-  td.selected {background: #EFEFEF; }
+  td.selected { background: #EFEFEF; }
 
   tr { height: 22px; }
+
+  table.grider input{
+    display: none;
+  }
 
   
   div input, table textarea, table select{
@@ -39,6 +43,7 @@
     height: 40px;
   }
   .griderEditor input{ height: 17px; }
+  .grider input{ display:none; }
 </style>
 
 <script type="text/javascript" src="js/class.js"></script> 
@@ -47,7 +52,7 @@
 <script type="text/javascript" src="js/jquery.ui.widget.js"></script> 
 <!-- Grider -->
 <script type="text/javascript" src="js/editors.js"></script> 
-<script type="text/javascript" src="js/jquery.grider2.js"></script> 
+<script type="text/javascript" src="js/grider2.js"></script> 
 <!--ufd-->
 <script type="text/javascript" src="js/jquery.ui.ufd.js--"></script> 
 <!-- Test-->
@@ -64,13 +69,13 @@
     <table border="1" id="grid1">
       <tr>
         <th col="number">Nº</th>
-        <th style="width: 100px" col="name" editor="nameEditor">Name</th>
-        <th style="width:200px" col="description" editor="descriptionEditor">Description</th>
-        <th style="width:100px" col="price" editor="priceEditor">Price</th>
-        <th style="width:100px" col="quantity" editor="quantityEditor">Quantity</th>
-        <th style="width:150px" col="state" editor="stateEditor">State</th>
-        <th style="width:150px" col="date" editor="dateEditor">Date</th>
-        <th style="width:100px" col="subtotal" formula="nombre*rol" summary="sum">Subtotal</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>State</th>
+        <th>Date</th>
+        <th>Subtotal</th>
       </tr>
       
       <tr>
@@ -111,27 +116,7 @@
 
     </table> 
 
-    <!-- Aqui se define el tipo de datos para el formulario -->
-    <div id="nameEditor" data-editor="TextEditor">
-      <input type="text" data-name-format="user[test_attributes][{id}][name]" />
-    </div>
-    <div id="priceEditor" data-editor="TextEditor">
-      <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][price]" />
-    </div>
 
-    <div id="quantityEditor" data-editor="TextEditor">
-      <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][quantity]" />
-    </div>
-
-    <div id="descriptionEditor" data-editor="TextAreaEditor">
-      <textarea id="user_description" data-name-format="user[test_attributes][{id}][description]"></textarea>
-    </div>
-
-    <div id="dateEditor" data-editor="TextEditor">
-      <input type="text" id="user_price" data-name-format="user[test_attributes][{id}][date]" />
-    </div>
-
-    <div id="stateEditor" data-editor="SelectEditor" data-name-format="TextEditor">
       <select id="user_test_attributes_state" data-name-format="user[test_attributes][{id}][state]">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
@@ -184,8 +169,6 @@
         <option value="WI">Wisconsin</option>
         <option value="WY">Wyoming</option>
       </select>
-    </div>
-
 
   </div>
 
@@ -210,13 +193,26 @@
 </body> 
 <script>
   $(document).ready(function() {
+
+    var config = {
+      cols: [
+        { 'name': 'name', 'editor': 'input', 'renderer': 'bold', 'pos': 1, 'width': 150 },
+        { 'name':'description', 'editor': 'textarea', 'pos':2 },
+        { 'name':'price', 'editor': 'input', 'pos':3 },
+        { 'name':'quantity', 'editor': 'input', 'pos': 4 },
+        { 'name':'state', 'editor': 'combo', 'editor_id': '#states', 'width': 250, 'pos': 5 },
+        { 'name': 'date', 'editor': 'date', 'pos': 6 },
+        { 'name':'subtotal', 'summary' : 'sum', 'formula': 'price*quantity', 'pos': 7}
+      ]
+    }
+
     if(!window.console.firebug) {
       $.getScript("js/firebug-lite-compressed.js");
     }
     //$('#test_ufd').ufd();
 
     // Creacion de grider
-    grider1 = $('#grid1').grider();
+    grider1 = $('#grid1').grider(config);
 
   });
 </script>
