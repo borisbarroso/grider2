@@ -7,6 +7,7 @@ class Grider
   constructor: (table, config)->
     self = this
     self['$table'] = $(table)
+    self.$table.addClass('griderTable')
     self['config'] = config
 
     self.setRows()
@@ -14,7 +15,7 @@ class Grider
     self.setColumns(columns)
     self.setColAttributes()
     #self.createEditors()
-    console.log(self.columns)
+    #console.log(self.columns)
 
   # Set rows for the grid
   setRows: ->

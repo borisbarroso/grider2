@@ -4,12 +4,12 @@
     var columns, self;
     self = this;
     self['$table'] = $(table);
+    self.$table.addClass('griderTable');
     self['config'] = config;
     self.setRows();
     columns = config.cols || config.columns;
     self.setColumns(columns);
     self.setColAttributes();
-    console.log(self.columns);
     return this;
   };
   Grider.prototype.defaults = {

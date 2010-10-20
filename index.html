@@ -30,15 +30,15 @@
 
   tr { height: 22px; }
 
-  table.grider input{
+  table.griderTable input{
     display: none;
   }
 
   
-  div input, table textarea, table select{
+  /*div input, table textarea, table select{
     font-size: 13px;
     border: 1px solid grey;
-  }
+  }*/
   table textarea{
     height: 40px;
   }
@@ -46,15 +46,13 @@
   .grider input{ display:none; }
 </style>
 
-<script type="text/javascript" src="js/class.js"></script> 
 <script type="text/javascript" src="js/jquery-1.4.2.js"></script> 
 <script type="text/javascript" src="js/jquery.ui.core.js"></script> 
 <script type="text/javascript" src="js/jquery.ui.widget.js"></script> 
 <!-- Grider -->
-<script type="text/javascript" src="js/editors.js"></script> 
 <script type="text/javascript" src="js/grider2.js"></script> 
 <!--ufd-->
-<script type="text/javascript" src="js/jquery.ui.ufd.js--"></script> 
+<script type="text/javascript" src="js/jquery.ui.ufd.min.js"></script> 
 <!-- Test-->
 <script type="text/javascript" src="js/qunit/qunit.js"></script> 
 
@@ -65,7 +63,6 @@
 <body class="overview"> 
   <div id="browser">
   </div>
-  <div class="grider">
     <table border="1" id="grid1">
       <tr>
         <th col="number">Nº</th>
@@ -115,9 +112,17 @@
       <input type="hidden" id="user[test_attributes][2][id]" value="3" />
 
     </table> 
+ <!--Tags for qunit-->
+	<h1 id="qunit-header">QUnit Test Suite</h1>
+	<h2 id="qunit-banner"></h2>
+	<div id="qunit-testrunner-toolbar"></div>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
 
 
-      <select id="user_test_attributes_state" data-name-format="user[test_attributes][{id}][state]">
+    <p>
+
+      <select id="states" data-name-format="user[test_attributes][{id}][state]">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
         <option value="AZ">Arizona</option>
@@ -170,15 +175,10 @@
         <option value="WY">Wyoming</option>
       </select>
 
-  </div>
+    </p>
 
-  <!--Tags for qunit-->
-	<h1 id="qunit-header">QUnit Test Suite</h1>
-	<h2 id="qunit-banner"></h2>
-	<div id="qunit-testrunner-toolbar"></div>
-	<h2 id="qunit-userAgent"></h2>
-	<ol id="qunit-tests"></ol>
 
+      <p>
       <select id="test_ufd" name="test_ufd">
         <option value="LP">La Paz</option>
         <option value="SCZ">Santa Cruz</option>
@@ -190,9 +190,14 @@
         <option value="BN">Beni</option>
         <option value="PA">Pando</option>
       </select>
-</body> 
+      </p>
+
+
+ </body> 
 <script>
   $(document).ready(function() {
+
+    $('select').ufd();
 
     var config = {
       cols: [
@@ -209,7 +214,6 @@
     if(!window.console.firebug) {
       $.getScript("js/firebug-lite-compressed.js");
     }
-    //$('#test_ufd').ufd();
 
     // Creacion de grider
     grider1 = $('#grid1').grider(config);
