@@ -33,7 +33,7 @@
       return {
         'name': el.name,
         'editor': el.editor,
-        'editor_id': el.editor_id || (new Date()).getTime(),
+        'editor_id': el.editor_id,
         'renderer': el.renderer || 'text',
         'width': el.width || self.defaults.colWidth,
         'pos': el.pos,
@@ -75,13 +75,13 @@
     return self.getOrCreateEditor(col, cell);
   };
   Grider.prototype.getOrCreateEditor = function(col, cell) {
-    var editor, funcName, params, pos, self;
+    var editor, func_name, params, self;
     self = this;
-    if (!col.editorID) {
-      col['editorID'] = self.id + '_' + col.name;
+    if (!col.editor_id) {
+      col['editor_id'] = self.id + '_' + col.name;
       params = {
         attr: {
-          id: col.editorID,
+          id: col.editor_id,
           value: self.getEditorValue(col, cell)
         },
         css: {
@@ -89,17 +89,14 @@
           position: 'absolute'
         }
       };
-      funcName = 'construct' + col.editor[0].toUpperCase() + col.editor.replace(/^[a-z]/, '');
-      editor = self[funcName].call(this, params);
+      func_name = 'create' + col.editor.charAt(0).toUpperCase() + col.editor.substring(1);
+      editor = self[func_name].call(this, params);
       editor.addClass('griderEditor');
-    } else {
-      editor = $('#' + col.editorID).val(self.getEditorValue(col, cell));
+    } else if (col.editor === 'combo' && !col.editor_grid) {
+      editor = self.createCombo(col);
     }
-    pos = cell.position();
-    return editor.css({
-      top: pos.top + 'px',
-      left: pos.left + 'px'
-    }).show().focus();
+    func_name = 'show' + col.editor.charAt(0).toUpperCase() + col.editor.substring(1);
+    return self[func_name].apply(this, [cell, col]);
   };
   Grider.prototype.getEditorValue = function(col, cell) {
     if (col.editor === 'input') {
@@ -110,7 +107,7 @@
       return 'otro';
     }
   };
-  Grider.prototype.constructInput = function(params) {
+  Grider.prototype.createInput = function(params) {
     var editor;
     params.attr['type'] = 'text';
     params.attr['data-editor'] = 'input';
@@ -118,8 +115,30 @@
     $('body').append(editor);
     return editor;
   };
-  Grider.prototype.constructCombo = function() {
-    return '';
+  Grider.prototype.createCombo = function(col) {
+    var self;
+    self = this;
+    return $('#' + col.editor_id).blur(function() {
+      $(this).parents(".griderEditor").hide();
+      return self.setComboValue(this);
+    }).siblings('input:text').css({
+      'width': (col.width - 25) + 'px'
+    }).parents("span.ufd").addClass("griderEditor").css({
+      position: 'absolute',
+      width: col.width + 'px'
+    }).attr({
+      'data-editor': 'combo'
+    }).show();
+  };
+  Grider.prototype.createDate = function(params) {
+    return this.createInput(params);
+  };
+  Grider.prototype.createTextarea = function(params) {
+    var editor;
+    params.attr['data-editor'] = 'textarea';
+    editor = $('<textarea/>').attr(params.attr).css(params.css);
+    $('body').append(editor);
+    return editor;
   };
   Grider.prototype.getColumn = function(name) {
     var _i, _len, _ref, _result, col;
@@ -132,8 +151,34 @@
     }
     return _result;
   };
+  Grider.prototype.showCombo = function(cell, col) {
+    var editor, pos;
+    pos = cell.position();
+    editor = $('#' + col.editor_id).parents("span.ufd");
+    editor.css({
+      top: pos.top + 'px',
+      left: pos.left + 'px'
+    }).show();
+    editor.find("input:text").focus();
+    return editor;
+  };
+  Grider.prototype.showInput = function(cell, col) {
+    var editor, pos;
+    pos = cell.position();
+    editor = $('#' + col.editor_id);
+    return editor.css({
+      top: pos.top + 'px',
+      left: pos.left + 'px'
+    }).show().focus();
+  };
+  Grider.prototype.showDate = function(cell, col) {
+    return this.showInput(cell, col);
+  };
+  Grider.prototype.showTextarea = function(cell, col) {
+    return this.showInput(cell, col);
+  };
   Grider.prototype.hideEditor = function(editorType) {
-    return (editorType === 'input') ? $('.griderEditor').hide() : null;
+    return (editorType === 'input' || editorType === 'textarea') ? $('.griderEditor').hide() : null;
   };
   $.fn.extend({
     'grider': function(config) {

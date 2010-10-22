@@ -122,7 +122,7 @@
 
     <p>
 
-      <select id="states" data-name-format="user[test_attributes][{id}][state]">
+      <select id="states" data-name-format="user[test_attributes][{id}][state]" class="gridEditor">
         <option value="AL">Alabama</option>
         <option value="AK">Alaska Alaska Alaska Alaska Alaska</option>
         <option value="AZ">Arizona</option>
@@ -197,7 +197,8 @@
 <script>
   $(document).ready(function() {
 
-    $('select').ufd();
+    $('#states').ufd();//#.parents("span:first").hide();
+
 
     var config = {
       cols: [
@@ -205,7 +206,7 @@
         { 'name':'description', 'editor': 'textarea', 'pos':2 },
         { 'name':'price', 'editor': 'input', 'pos':3 },
         { 'name':'quantity', 'editor': 'input', 'pos': 4 },
-        { 'name':'state', 'editor': 'combo', 'editor_id': '#states', 'width': 250, 'pos': 5 },
+        { 'name':'state', 'editor': 'combo', 'editor_id': 'states', 'width': 200, 'pos': 5 },
         { 'name': 'date', 'editor': 'date', 'pos': 6 },
         { 'name':'subtotal', 'summary' : 'sum', 'formula': 'price*quantity', 'pos': 7}
       ]
