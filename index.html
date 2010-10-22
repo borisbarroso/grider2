@@ -11,6 +11,9 @@
   body{
     font-family: arial;
   }
+  .griderRow input{
+    display: none;
+  }
   table{
     border-collapse: collapse;
     font-size: 13px;
@@ -30,9 +33,6 @@
 
   tr { height: 22px; }
 
-  table.griderTable input{
-    display: none;
-  }
 
   
   /*div input, table textarea, table select{
@@ -211,12 +211,13 @@
       ]
     }
 
+    // Creacion de grider
+    grider1 = $('#grid1').grider(config);
+
     if(!window.console.firebug) {
       $.getScript("js/firebug-lite-compressed.js");
     }
 
-    // Creacion de grider
-    grider1 = $('#grid1').grider(config);
 
   });
 </script>
