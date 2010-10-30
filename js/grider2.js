@@ -99,13 +99,7 @@
     return self[func_name].apply(this, [cell, col]);
   };
   Grider.prototype.getEditorValue = function(col, cell) {
-    if (col.editor === 'input') {
-      return cell.find('input:text').val();
-    } else if (col.editor === 'combo') {
-      return cell.find('input:text').val();
-    } else {
-      return 'otro';
-    }
+    return col.editor === 'input' ? cell.find('input:text').val() : (col.editor === 'combo' ? cell.find('input:text').val() : 'otro');
   };
   Grider.prototype.createInput = function(params) {
     var editor;
@@ -119,11 +113,11 @@
     var self;
     self = this;
     return $('#' + col.editor_id).blur(function() {
-      $(this).parents(".griderEditor").hide();
+      $(this).parent(".griderEditor").hide();
       return self.setComboValue(this);
     }).siblings('input:text').css({
       'width': (col.width - 25) + 'px'
-    }).parents("span.ufd").addClass("griderEditor").css({
+    }).parent("span.ufd").addClass("griderEditor").css({
       position: 'absolute',
       width: col.width + 'px'
     }).attr({
@@ -154,7 +148,7 @@
   Grider.prototype.showCombo = function(cell, col) {
     var editor, pos;
     pos = cell.position();
-    editor = $('#' + col.editor_id).parents("span.ufd");
+    editor = $('#' + col.editor_id).parent("span.ufd");
     editor.css({
       top: pos.top + 'px',
       left: pos.left + 'px'
@@ -185,4 +179,4 @@
       return new Grider(this, config);
     }
   });
-})();
+}).call(this);

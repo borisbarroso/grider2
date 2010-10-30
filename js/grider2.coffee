@@ -116,11 +116,11 @@ class Grider
   createCombo: (col)->
     self = this
     $('#' + col.editor_id).blur(->
-      $(this).parents(".griderEditor").hide()
+      $(this).parent(".griderEditor").hide()
       self.setComboValue(this)
     )
     .siblings('input:text').css({'width': (col.width - 25) + 'px'})
-    .parents("span.ufd").addClass("griderEditor")
+    .parent("span.ufd").addClass("griderEditor")
     .css({position: 'absolute', width: col.width + 'px' })
     .attr({'data-editor': 'combo'}).show()
 
@@ -145,7 +145,7 @@ class Grider
   # show for combo
   showCombo: (cell, col)->
     pos = cell.position()
-    editor = $('#' + col.editor_id).parents("span.ufd")
+    editor = $('#' + col.editor_id).parent("span.ufd")
     editor.css({ top: pos.top + 'px', left: pos.left + 'px'}).show()
     editor.find("input:text").focus()
     editor
