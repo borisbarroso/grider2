@@ -49,9 +49,9 @@ class Grider
     $(self.columns).each((i, el)->
       css_sel = 'tr:first th:eq(' + el.pos + ')'
       self.$table.find(css_sel).css({ 'width': el.width + 'px' })
-      self.$table.find('tr.griderRow td:nth-child(' + ( el.pos + 1 ) + ')').attr('name', el.name)
+      self.$table.find('tr.griderRow').find('td:nth-child(' + ( el.pos + 1 ) + ')').data('name', el.name)
       if !!el.editor
-        self.$table.find('tr.griderRow td:nth-child(' + ( el.pos + 1 ) + ')').addClass('editable', el.name)
+        self.$table.find('tr.griderRow').find('td:nth-child(' + ( el.pos + 1 ) + ')').addClass('editable')
 
     )
 
@@ -71,7 +71,7 @@ class Grider
     self = this
     self.currentCell = cell
     $('.griderEditor').hide()
-    col = self.getColumn( cell.attr('name') )
+    col = self.getColumn( cell.data('name') )
     self.getOrCreateEditor(col, cell)
 
   # Creates an editor if none is selected or returns one that was already created

@@ -51,8 +51,8 @@
       self.$table.find(css_sel).css({
         'width': el.width + 'px'
       });
-      self.$table.find('tr.griderRow td:nth-child(' + (el.pos + 1) + ')').attr('name', el.name);
-      return !!el.editor ? self.$table.find('tr.griderRow td:nth-child(' + (el.pos + 1) + ')').addClass('editable', el.name) : null;
+      self.$table.find('tr.griderRow').find('td:nth-child(' + (el.pos + 1) + ')').data('name', el.name);
+      return !!el.editor ? self.$table.find('tr.griderRow').find('td:nth-child(' + (el.pos + 1) + ')').addClass('editable') : null;
     });
   };
   Grider.prototype.setEvents = function() {
@@ -71,7 +71,7 @@
     self = this;
     self.currentCell = cell;
     $('.griderEditor').hide();
-    col = self.getColumn(cell.attr('name'));
+    col = self.getColumn(cell.data('name'));
     return self.getOrCreateEditor(col, cell);
   };
   Grider.prototype.getOrCreateEditor = function(col, cell) {
