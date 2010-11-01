@@ -16,6 +16,7 @@ class Grider
     self.setRows()
     columns = config.cols || config.columns
     self.setColumns(columns)
+    self.$table.data('columns', columns)
     self.setColAttributes()
     self.setEvents()
     self.addDelCol() if config.delrow
@@ -32,7 +33,9 @@ class Grider
   # Set columns for the grid
   setColumns: (columns)->
     self = this
+    self['formulas'] = []
     self.columns = $(columns).map( (i, el)->
+      self.formulas.push( { name: el.name, formula: el.formula } ) if not not el.formula
       {
         'name': el.name
         'editor': el.editor,
@@ -66,11 +69,27 @@ class Grider
     $('.griderEditor').live('focusout', ->
       self.hideEditor( $(this).attr('data-editor') )
       self.setCellValue(this)
-      $(this).trigger("grider:blur", this)
+      #self.checkFormula()
+      self.$table.trigger("grider:editor:blur", self.currentCell)
     )
     self.$table.live( 'addrow' , (el)->
       self.addRow()
     )
+
+  ###
+  # check if the current cell triggers a formula
+  checkFormula: ->
+    name = self.currentCell.attr('data-name')
+    for formula in self.formulas
+      reg = new RegExp('\\b'+ col.name +'\\b')
+      calculateFormula(formula.name, formula.formula) if formula.formula.match(reg)
+
+  # calculates the formula
+  calculateFormula: (col, formula)->
+    self = this
+    tr = self.currentCell.parents("tr:first")
+    #
+  ###
 
   # Adds col and events for deleting rows
   addDelCol: ->

@@ -211,8 +211,8 @@
       cols: [
         { 'name': 'name', 'editor': 'input', 'renderer': 'bold', 'pos': 1, 'width': 150 },
         { 'name':'description', 'editor': 'textarea', 'pos':2, 'width': 170 },
-        { 'name':'price', 'editor': 'input', 'pos':3 },
-        { 'name':'quantity', 'editor': 'input', 'pos': 4 },
+        { 'name':'price', 'editor': 'input', 'pos':3, 'triggerformula':true },
+        { 'name':'quantity', 'editor': 'input', 'pos': 4, 'triggerformula':true },
         { 'name':'state', 'editor': 'combo', 'editor_id': 'states', 'width': 200, 'pos': 5 },
         { 'name': 'date', 'editor': 'date', 'pos': 6 },
         { 'name':'subtotal', 'summary' : 'sum', 'formula': 'price*quantity', 'pos': 7}
@@ -227,6 +227,17 @@
       $('#grid1').trigger("addrow"); 
     }, 200);
     //$('table td:nth-child(3)').css("width", "170px");
+    // Add support for formulas
+    $('#grid1').live("grider:editor:blur", function(e, cell) {
+      var name = $(cell).attr('data-name');
+      var tr = $(cell).parent("tr");
+      if(name === 'price' || name === 'quantity') {
+        var price = 1 * tr.find("td.editable[data-name=price]").find(":text").val();
+        var quantity = 1 * tr.find("td.editable[data-name=quantity]").find(":text").val();
+        var tot = price * quantity;
+        tr.find("td[data-name=subtotal]").html(tot.toFixed(2) );
+      }
+    })
 
     if(!window.console.firebug) {
       $.getScript("js/firebug-lite-compressed.js");

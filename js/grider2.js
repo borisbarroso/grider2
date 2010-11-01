@@ -16,6 +16,7 @@
     self.setRows();
     columns = config.cols || config.columns;
     self.setColumns(columns);
+    self.$table.data('columns', columns);
     self.setColAttributes();
     self.setEvents();
     if (config.delrow) {
@@ -37,7 +38,14 @@
   Grider.prototype.setColumns = function(columns) {
     var self;
     self = this;
+    self['formulas'] = [];
     return (self.columns = $(columns).map(function(i, el) {
+      if (!!el.formula) {
+        self.formulas.push({
+          name: el.name,
+          formula: el.formula
+        });
+      }
       return {
         'name': el.name,
         'editor': el.editor,
@@ -72,12 +80,26 @@
     $('.griderEditor').live('focusout', function() {
       self.hideEditor($(this).attr('data-editor'));
       self.setCellValue(this);
-      return $(this).trigger("grider:blur", this);
+      return self.$table.trigger("grider:editor:blur", self.currentCell);
     });
     return self.$table.live('addrow', function(el) {
       return self.addRow();
     });
   };
+  /*
+  # check if the current cell triggers a formula
+  checkFormula: ->
+    name = self.currentCell.attr('data-name')
+    for formula in self.formulas
+      reg = new RegExp('\\b'+ col.name +'\\b')
+      calculateFormula(formula.name, formula.formula) if formula.formula.match(reg)
+
+  # calculates the formula
+  calculateFormula: (col, formula)->
+    self = this
+    tr = self.currentCell.parents("tr:first")
+    #
+  */
   Grider.prototype.addDelCol = function() {
     var html, self;
     self = this;
