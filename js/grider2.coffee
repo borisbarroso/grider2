@@ -5,6 +5,7 @@ class Grider
     'colWidth': 100
   # Init function
   constructor: (table, config)->
+    config = $.extend({delrow: true, delrowText: 'delete', delrowTitle: 'Delete row'}, config)
     self = this
     self['id'] = table.attr('id')
     self['$table'] = self['table'] = table
@@ -17,6 +18,7 @@ class Grider
     self.setColumns(columns)
     self.setColAttributes()
     self.setEvents()
+    self.addDelCol() if config.delrow
     #self.createEditors()
 
   # Set rows for the grid
@@ -49,7 +51,7 @@ class Grider
     $(self.columns).each((i, el)->
       css_sel = 'tr:first th:eq(' + el.pos + ')'
       self.$table.find(css_sel).css({ 'width': el.width + 'px' })
-      self.$table.find('tr.griderRow').find('td:nth-child(' + ( el.pos + 1 ) + ')').data('name', el.name)
+      self.$table.find('tr.griderRow').find('td:nth-child(' + ( el.pos + 1 ) + ')').attr('data-name', el.name).css('width', el.width + 'px')
       if !!el.editor
         self.$table.find('tr.griderRow').find('td:nth-child(' + ( el.pos + 1 ) + ')').addClass('editable')
 
@@ -66,6 +68,19 @@ class Grider
       self.setCellValue(this)
       $(this).trigger("grider:blur", this)
     )
+    self.$table.live( 'addrow' , (el)->
+      self.addRow()
+    )
+
+  # Adds col and events for deleting rows
+  addDelCol: ->
+    self = this
+    html = ['<td>', '<a href="javascript:" title="', self.config.delrowTitle ,'" class="delrow">',
+      self.config.delrowText, '</a>',  '</td>'].join("")
+    self.$table.find('.griderRow').append(html)
+    $('#' + self.id + ' .delrow').live('click', ->
+      $(this).parents('tr:first').detach() if self.$table.find('tr.griderRow').length > 1
+    )
 
   # sets the value for a cell and the display
   setCellValue: (elem)->
@@ -78,7 +93,7 @@ class Grider
       input.val(value)
       disp.html(value)
     else if editorType == 'combo'
-      select = $('#' + self.getColumn($(self.currentCell).data("name")).editor_id )
+      select = $('#' + self.getColumn($(self.currentCell).attr("data-name")).editor_id )
       value = select.val()
       input.val( value )
       disp.html( select.ufd("getCurrentTextValue") )
@@ -89,7 +104,7 @@ class Grider
     self = this
     self.currentCell = cell
     $('.griderEditor').hide()
-    col = self.getColumn( cell.data('name') )
+    col = self.getColumn( cell.attr('data-name') )
     self.getOrCreateEditor(col, cell)
 
   # Creates an editor if none is selected or returns one that was already created
@@ -98,8 +113,8 @@ class Grider
     if !col.editor_id
       col['editor_id'] = self.id + '_' + col.name
       params = {
-        attr: { id: col.editor_id, value: self.getEditorValue(col, cell) },
-        css: { width: (col.width - 3) + 'px', position: 'absolute' }
+        attr: { id: col.editor_id, value: cell.find(":text").val() },
+        css: { width: (col.width) + 'px', position: 'absolute' }
       }
       # Calls the function to create the editor
       func_name = 'create' + col.editor.charAt(0).toUpperCase() + col.editor.substring(1)
@@ -110,16 +125,6 @@ class Grider
 
     func_name = 'show' + col.editor.charAt(0).toUpperCase() + col.editor.substring(1)
     self[func_name].apply(this, [cell, col] )
-
-
-  # gets the value formated for the editor
-  getEditorValue: (col, cell)->
-    if col.editor == 'input'
-      cell.find('input:text').val()
-    else if col.editor == 'combo'
-      cell.find('input:text').val()
-    else
-      'otro'
 
   # Constructs the Input text editor
   createInput: (params)->
@@ -195,6 +200,16 @@ class Grider
   hideEditor: (editorType)->
     if(editorType == 'input' or editorType == 'textarea')
       $('.griderEditor').hide()
+
+  # Adds a new row to the grid
+  addRow: ->
+    self = this
+    tr = self.$table.find(".griderRow").last().clone()
+    tr.find(':text').each((i, el)->
+      tmp_name = ['[', new Date().getTime() ,']' ].join("")
+      $(el).attr('name', el.name.replace(/\[\d\]/, tmp_name ) )
+    )
+    self.$table.append(tr)
 
 $.fn.extend(
   'grider': (config)->

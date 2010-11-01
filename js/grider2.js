@@ -2,6 +2,11 @@
   var Grider;
   Grider = function(table, config) {
     var columns, self;
+    config = $.extend({
+      delrow: true,
+      delrowText: 'delete',
+      delrowTitle: 'Delete row'
+    }, config);
     self = this;
     self['id'] = table.attr('id');
     self['$table'] = (self['table'] = table);
@@ -13,6 +18,9 @@
     self.setColumns(columns);
     self.setColAttributes();
     self.setEvents();
+    if (config.delrow) {
+      self.addDelCol();
+    }
     return this;
   };
   Grider.prototype.defaults = {
@@ -51,7 +59,7 @@
       self.$table.find(css_sel).css({
         'width': el.width + 'px'
       });
-      self.$table.find('tr.griderRow').find('td:nth-child(' + (el.pos + 1) + ')').data('name', el.name);
+      self.$table.find('tr.griderRow').find('td:nth-child(' + (el.pos + 1) + ')').attr('data-name', el.name).css('width', el.width + 'px');
       return !!el.editor ? self.$table.find('tr.griderRow').find('td:nth-child(' + (el.pos + 1) + ')').addClass('editable') : null;
     });
   };
@@ -61,10 +69,22 @@
     self.$table.find('td.editable').live('click', function(el) {
       return self.startEditor($(this));
     });
-    return $('.griderEditor').live('focusout', function() {
+    $('.griderEditor').live('focusout', function() {
       self.hideEditor($(this).attr('data-editor'));
       self.setCellValue(this);
       return $(this).trigger("grider:blur", this);
+    });
+    return self.$table.live('addrow', function(el) {
+      return self.addRow();
+    });
+  };
+  Grider.prototype.addDelCol = function() {
+    var html, self;
+    self = this;
+    html = ['<td>', '<a href="javascript:" title="', self.config.delrowTitle, '" class="delrow">', self.config.delrowText, '</a>', '</td>'].join("");
+    self.$table.find('.griderRow').append(html);
+    return $('#' + self.id + ' .delrow').live('click', function() {
+      return self.$table.find('tr.griderRow').length > 1 ? $(this).parents('tr:first').detach() : null;
     });
   };
   Grider.prototype.setCellValue = function(elem) {
@@ -78,7 +98,7 @@
       input.val(value);
       return disp.html(value);
     } else if (editorType === 'combo') {
-      select = $('#' + self.getColumn($(self.currentCell).data("name")).editor_id);
+      select = $('#' + self.getColumn($(self.currentCell).attr("data-name")).editor_id);
       value = select.val();
       input.val(value);
       return disp.html(select.ufd("getCurrentTextValue"));
@@ -89,7 +109,7 @@
     self = this;
     self.currentCell = cell;
     $('.griderEditor').hide();
-    col = self.getColumn(cell.data('name'));
+    col = self.getColumn(cell.attr('data-name'));
     return self.getOrCreateEditor(col, cell);
   };
   Grider.prototype.getOrCreateEditor = function(col, cell) {
@@ -100,10 +120,10 @@
       params = {
         attr: {
           id: col.editor_id,
-          value: self.getEditorValue(col, cell)
+          value: cell.find(":text").val()
         },
         css: {
-          width: (col.width - 3) + 'px',
+          width: (col.width) + 'px',
           position: 'absolute'
         }
       };
@@ -115,9 +135,6 @@
     }
     func_name = 'show' + col.editor.charAt(0).toUpperCase() + col.editor.substring(1);
     return self[func_name].apply(this, [cell, col]);
-  };
-  Grider.prototype.getEditorValue = function(col, cell) {
-    return col.editor === 'input' ? cell.find('input:text').val() : (col.editor === 'combo' ? cell.find('input:text').val() : 'otro');
   };
   Grider.prototype.createInput = function(params) {
     var editor;
@@ -200,6 +217,17 @@
   };
   Grider.prototype.hideEditor = function(editorType) {
     return (editorType === 'input' || editorType === 'textarea') ? $('.griderEditor').hide() : null;
+  };
+  Grider.prototype.addRow = function() {
+    var self, tr;
+    self = this;
+    tr = self.$table.find(".griderRow").last().clone();
+    tr.find(':text').each(function(i, el) {
+      var tmp_name;
+      tmp_name = ['[', new Date().getTime(), ']'].join("");
+      return $(el).attr('name', el.name.replace(/\[\d\]/, tmp_name));
+    });
+    return self.$table.append(tr);
   };
   $.fn.extend({
     'grider': function(config) {

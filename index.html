@@ -19,6 +19,13 @@
     font-size: 13px;
     border: 1px solid #303030;
   }
+  input, textarea{
+    font-size: 13px;
+    border: 1px solid #2B81AF;
+  }
+  #ufd-container{
+    font-size: 13px;
+  }
   th{
     padding: 2px;
   }
@@ -27,7 +34,7 @@
     border: 1px solid #303030;
   }
 
-  table.grider td.editable div{ display:none }
+  /*table.grider td.editable div{ display:none }*/
 
   td.selected { background: #EFEFEF; }
 
@@ -76,14 +83,14 @@
       </tr>
       
       <tr>
-        <td><div></div></td>
-        <td><div><input type="text" name="user[test_attributes][0][name]" value="" /></div><span class="display"></span></td>
-        <td><div><input type="text" name="user[test_attributes][0][description]" value="" /></div><span class="display"></span></td>
-        <td><div><input type="text" name="user[test_attributes][0][price]" value="" /></div><span class="display"></span></td>
-        <td><div><input type="text" name="user[test_attributes][0][quantity]" value="" /></div><span class="display"></span></td>
-        <td><div><input type="text" name="user[test_attributes][0][state]" value="" /></div><span class="display"></span></td>
-        <td><div><input type="text" name="user[test_attributes][0][date]" value="" /></div><span class="display"></span></td>
-        <td><div></div></td>
+        <td></td>
+        <td><input type="text" name="user[test_attributes][0][name]" value="" /><span class="display"></span></td>
+        <td><input type="text" name="user[test_attributes][0][description]" value="" /><span class="display"></span></td>
+        <td><input type="text" name="user[test_attributes][0][price]" value="" /><span class="display"></span></td>
+        <td><input type="text" name="user[test_attributes][0][quantity]" value="" /><span class="display"></span></td>
+        <td><input type="text" name="user[test_attributes][0][state]" value="" /><span class="display"></span></td>
+        <td><input type="text" name="user[test_attributes][0][date]" value="" /><span class="display"></span></td>
+        <td></td>
       </tr>
       <input type="hidden" id="user[test_attributes][0][id]" value="1" />
 
@@ -203,23 +210,27 @@
     var config = {
       cols: [
         { 'name': 'name', 'editor': 'input', 'renderer': 'bold', 'pos': 1, 'width': 150 },
-        { 'name':'description', 'editor': 'textarea', 'pos':2 },
+        { 'name':'description', 'editor': 'textarea', 'pos':2, 'width': 170 },
         { 'name':'price', 'editor': 'input', 'pos':3 },
         { 'name':'quantity', 'editor': 'input', 'pos': 4 },
         { 'name':'state', 'editor': 'combo', 'editor_id': 'states', 'width': 200, 'pos': 5 },
         { 'name': 'date', 'editor': 'date', 'pos': 6 },
         { 'name':'subtotal', 'summary' : 'sum', 'formula': 'price*quantity', 'pos': 7}
-      ]
+      ],
+      delrow: true
     }
 
     // Creacion de grider
     grider1 = $('#grid1').grider(config);
 
+    setTimeout(function() { 
+      $('#grid1').trigger("addrow"); 
+    }, 200);
+    //$('table td:nth-child(3)').css("width", "170px");
+
     if(!window.console.firebug) {
       $.getScript("js/firebug-lite-compressed.js");
     }
-
-
   });
 </script>
 </html>
