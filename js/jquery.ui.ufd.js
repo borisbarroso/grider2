@@ -1,78 +1,11 @@
-javascript: (function() {
-	
-	var head = document.getElementsByTagName('head')[0];
-	var svnRoot = "http://ufd.googlecode.com/svn/trunk";
-	var googRoot = "http://ajax.googleapis.com/ajax/libs";
-	var tryCounter=20;
-	var delay=250;
-	
-	var scripts = [svnRoot + "/src/jquery.ui.ufd.js"];
-	var csses = [
-		svnRoot + "/css/ufd-base.css",
-		svnRoot + "/css/plain/plain.css"
-	];
-
-	/* check if jQuery / UI are present */
-	var newJQ = false;
-	if(typeof jQuery == 'undefined') {
-		newJQ = true;
-
-		scripts.unshift(googRoot + "/jqueryui/1.7.2/jquery-ui.min.js");
-		scripts.unshift(googRoot + "/jquery/1.4.2/jquery.min.js");
-
-	} else if(!(jQuery.ui)){
-		scripts.unshift(googRoot + "/jqueryui/1.7.2/jquery-ui.min.js");
-	}
-	
-	/* get script: */
-	for(scriptPtr in scripts){
-		var script = document.createElement('SCRIPT');
-		script.type = 'text/javascript';
-		script.src = scripts[scriptPtr] + "?noCache=" + (Math.random());
-		head.appendChild(script);
-	}
-	
-	/* get css: */
-	for(cssPtr in csses){
-		var css = document.createElement('LINK');
-		css.rel = 'stylesheet';
-		css.type = 'text/css';
-		css.media = 'screen';
-		css.href =  csses[cssPtr];
-		
-		head.appendChild(css);
-	}	
-	
-	/* thanks for inspiration: http://www.learningjquery.com/2009/04/better-stronger-safer-jquerify-bookmarklet */
-	var tryjQuery=function() {
-		if (typeof jQuery=='undefined' || typeof jQuery.ui=='undefined'|| typeof jQuery.ui.ufd=='undefined') {
-			if (tryCounter--) {
-				setTimeout(function() { tryjQuery(); }, delay);
-			} else {
-				alert("failed to intialize UFD bookmarklet sorry.");
-			}
-		} else { /* loaded */
-			if(newJQ) jQuery.noConflict(); 	/* don't inhabit $ if we are injecting jQuery 	 */
-			jQuery("select:not([multiple])").ufd();
-		}
-		
-	};
-
-	tryjQuery();
-	
-	
-})();
-
-
-
 /*
-	ufd 0.5 : Unobtrusive Fast-filter Drop-down jQuery plugin.
+	ufd 0.6 : Unobtrusive Fast-filter Drop-down jQuery plugin.
 
 	Authors:
 		thetoolman@gmail.com 
 		Kadalashvili.Vladimir@gmail.com
 
-	Version:  0.5
+	Version:  0.6
 
 	Website: http://code.google.com/p/ufd/
  */
@@ -86,13 +19,21 @@ $.widget(widgetName, {
 	// options: provided by framework
 	// element: provided by framework
 
-	_init: function() {
+	_init: function() { //1.7 init
+		// in 1.8 this method is  "default functionality" which we dont have; here for 1.7 support
+		if(!this.created) this._create();
+	},
+	
+	_create: function() { //1.8 init
+		if(this.created) return;
+		this.created = true;
+		
 		if (this.element[0].tagName.toLowerCase() != "select") {
 			this.destroy();
 			return false;
 		}
 
-		// console.time("init");
+		// this._timingMeasure(true, "init");
 		
 		this.options = $.extend(true, {}, this.options); //deep copy: http://dev.jqueryui.com/ticket/4366
 
@@ -101,10 +42,18 @@ $.widget(widgetName, {
 		this.logNode = $(this.options.logSelector);
 		this.overflowCSS = this.options.allowLR ? "overflow" : "overflowY";
 		var selectName = this.selectbox.attr("name");
-		var suffixName = selectName + this.options.suffix;
-		var inputName = this.options.submitFreeText ? selectName : suffixName;
-		
-		if(this.options.submitFreeText) this.selectbox.attr("name", suffixName);
+		var prefixName = this.options.prefix + selectName;
+		var inputName = this.options.submitFreeText ? selectName : prefixName;
+		var inputId = ""; // none unless master select has one
+
+		var sbId = this.selectbox.attr("id");
+
+		if(sbId) {
+			inputId = this.options.prefix + sbId ;
+			this.labels = $("label[for='" + sbId + "']").attr("for", inputId);
+		}
+
+		if(this.options.submitFreeText) this.selectbox.attr("name", prefixName);
 		if(this.options.calculateZIndex) this.options.zIndexPopup = this._calculateZIndex();
 
 		var css = this.options.css;
@@ -114,9 +63,9 @@ $.widget(widgetName, {
 
 		this.wrapper = $([
 			'<span class="', css.wrapper, ' ', css.hidden, ' ', css.skin, '">',
-				'<input type="text" autocomplete="off" value="" class="', css.input, '" name="', inputName, '"/>',
+				'<input type="text" id="',inputId,'" class="', css.input, '" name="', inputName, '"/>',
 				'<button type="button" tabindex="-1" class="', css.button, '"><div class="', css.buttonIcon, '"/></button>',
-				//   <select .../> goes here
+			//   <select .../> goes here
 			'</span>'
 		].join(''));
 		this.dropdown = $([
@@ -138,11 +87,18 @@ $.widget(widgetName, {
 		this.listScroll = this.listWrapper.children(":first");
 		
 		if($.fn.bgiframe) this.listWrapper.bgiframe(); //ie6 !
+		
+		// check browser supports min-width, revert to fixed if no support - Looking at you, iE6...
+		if(!this.options.listWidthFixed){ 
+			this.listWrapper.css({"width": 50, "min-width": 100});
+			this.options.listWidthFixed = (this.listWrapper.width() < 100);
+			this.listWrapper.css({"width": null, "min-width": null});
+		}
 
 		this._populateFromMaster();
 		this._initEvents();
 
-		// console.timeEnd("init");
+		// this._timingMeasure(false, "init");
 	},
 
 
@@ -246,7 +202,7 @@ $.widget(widgetName, {
 				self.filter(true); //show all 
 				self.inputFocus();
 				self.showList();
-			}          
+			}
 		}); 
 		this.input.bind("focus", function(e) {
 			if(self.isDisabled){
@@ -288,7 +244,6 @@ $.widget(widgetName, {
 			self.stopEvent(e);
 			e = e ? e : window.event;
 			var normal = e.detail ? e.detail * -1 : e.wheelDelta / 40;
-			
 			
 			var curST = self.listScroll.scrollTop();
 			var newScroll = curST + ((normal > 0) ? -1 * self.itemHeight : 1 * self.itemHeight);
@@ -346,6 +301,19 @@ $.widget(widgetName, {
 			if (self.internalFocus) self.realLooseFocusEvent();
 		};
 		$(document).bind("click." + widgetName, this._myDocClickHandler);
+		
+		// polling for disabled, dimensioned
+		if(this.options.polling) {
+			var self = this; // shadow self var - less lookup chain == faster
+			this._myPollId = setInterval(function() {
+				// fast as possible
+				if(!self.dimensioned) self.setDimensions();
+				if(self.selectbox[0].disabled != self.isDisabled) { 
+					(self.selectbox[0].disabled) ? self.disable() : self.enable();
+				}
+				
+			}, self.options.polling);
+		}
 
 	},
 
@@ -435,11 +403,11 @@ $.widget(widgetName, {
 
 		var search = function() {
 			// self.log("filter search");
-			// console.time("filter search");
+			// this._timingMeasure(true, "filter search");
 			var mm = self.trie.find(searchText); // search!
 			self.trie.matches = mm.matches;
 			self.trie.misses = mm.misses;
-			// console.timeEnd("filter search");
+			// this._timingMeasure(false, "filter search");
 
 			//yield then screen update
 			self.updateOnTimeout = setTimeout(function(){screenUpdate();}, self.options.delayYield); 
@@ -449,18 +417,16 @@ $.widget(widgetName, {
 		var screenUpdate = function() {
 			// self.log("screen update");
 
-			// console.time("screenUpdate");
+			// this._timingMeasure(true, "screenUpdate");
 			var active = self.getActive(); //get item before class-overwrite
 			
 			if (self.options.addEmphasis) {
 				self.emphasis(self.trie.matches, true, searchText);
 			}
 			
-			self.overwriteClass(self.trie.matches,"" );
-			self.visibleCount = self.trie.matches.length;
+			self.visibleCount = self.overwriteClass(self.trie.matches, "" );
 			if(showAll || !self.trie.matches.length) {
-				self.overwriteClass(self.trie.misses, "" );
-				self.visibleCount += self.trie.misses.length;
+				self.visibleCount += self.overwriteClass(self.trie.misses, "" );
 				if (self.options.addEmphasis) {
 					self.emphasis(self.trie.misses, false, searchText);
 				}
@@ -478,7 +444,7 @@ $.widget(widgetName, {
 				self.setActive(firstmatch.get(0));
 
 			} 
-			// console.timeEnd("screenUpdate");
+			// this._timingMeasure(false, "screenUpdate");
 
 
 			self.setListDisplay();
@@ -491,48 +457,73 @@ $.widget(widgetName, {
 			search();
 		}
 	},
+
+	/*
+	 * replace chars with entity encoding
+	 */
+	_encodeDom: $('<div/>'),
+	_encodeString: function(toEnc) {
+		return $.trim(this._encodeDom.text(toEnc).html());	
+	},	
 	
 	emphasis: function(array, isAddEmphasis, searchText ) {
 		
+		var tritem, index, indexB, li, text, stPattern, escapedST;
 		var searchTextLength = searchText.length || 0;
 		var options = this.selectbox.get(0).options;
-		var tritem, index, indexB, li, text, stPattern, escapedST;
 		index = array.length;
 		
-		isAddEmphasis = (isAddEmphasis && searchTextLength > 0 && index > 1); // don't add emphasis to 0-length or single item  
+		isAddEmphasis = (isAddEmphasis && searchTextLength > 0); // don't add emphasis to 0-length  
 		
 		if(isAddEmphasis) {
-			escapedST = searchText.replace(/([\\\^\$*+[\]?{}.=!:(|)])/g,"\\$1"); // http://xkr.us/js/regexregex 
+			// html encode search string to match innerHTML then escape regexp chars; thanks http://xkr.us/js/regexregex 
+			escapedST = this._encodeString(searchText).replace(/([\\\^\$*+[\]?{}.=!:(|)])/g,"\\$1"); 
 			stPattern = new RegExp("(" + escapedST + ")", "gi"); // $1
 			this.hasEmphasis = true;
 		}
 		// this.log("add emphasis? " + isAddEmphasis);
-		// console.time("em");
-		
+		// this._timingMeasure(true, "em");
 		while(index--) {
 			tritem = array[index];
 			indexB = tritem.length;
 			while(indexB--) { // duplicate match array
 				li = tritem[indexB];
-				text = $.trim(options[li.getAttribute("name")].text);
-				if (isAddEmphasis) {
-					li.innerHTML = text.replace(stPattern, "<em>$1</em>");
-				} else {
-					li.innerHTML = text;
-				}
+				text = $.trim(options[li.getAttribute("name")].innerHTML);
+				li.innerHTML = isAddEmphasis ? text.replace(stPattern, "<em>$1</em>") : text;
 			}
 		}
-		
-		// console.timeEnd("em");
+		// this._timingMeasure(false, "em");
 	},
-	
+
+	/*
+	_timingMeasure_agnostic : function(label, isStart) {
+		if(isStart) {
+			this._tm[label] = new Date().getTime();
+		} else {
+			var start = this._tm[label];
+			var dur = (new Date().getTime()) - start;
+			alert(label + ": millis - " + dur);
+		}
+	},
+	_tm : {},
+	*/
+	_timingMeasure_firebug : function(isStart, label) {
+		if(isStart) {
+			console.time(label);
+		} else {
+			console.timeEnd(label);
+		}
+	},	
+	_timingMeasure : function(isStart, label) {
+		this._timingMeasure_firebug(isStart, label);
+	},
 	removeEmphasis : function() {
 		// this.log("remove emphasis");
 		if(!this.hasEmphasis){
 			// this.log("no emphasis to remove");
 			return;
 		}
-		// console.time("rem");
+		// this._timingMeasure(true, "rem");
 		this.hasEmphasis = false;
 		var options = this.selectbox.get(0).options;
 		var theLiSet = this.list.get(0).getElementsByTagName('LI'); // much faster array then .childElements !
@@ -540,11 +531,11 @@ $.widget(widgetName, {
 		var li;
 		while(liCount--){
 			var li = theLiSet[liCount];
-			li.innerHTML = $.trim(options[li.getAttribute("name")].text);
+			li.innerHTML = $.trim(options[li.getAttribute("name")].innerHTML);
 		}
 		
 		
-		// console.timeEnd("rem");		
+		// this._timingMeasure(false, "rem");		
 		
 	},
 
@@ -590,13 +581,12 @@ $.widget(widgetName, {
 		
 		return false;
 	},
-
+	
 	_populateFromMaster: function() {
 		// this.log("populate from master select");
-		// console.time("prep");
+		// this._timingMeasure(true, "prep");
 		var isEnabled = !this.selectbox.filter("[disabled]").length; //remember incoming state
 		this.disable();
-		this.setDimensions();
 
 		this.trie = new InfixTrie(this.options.infix, this.options.caseSensitive);
 		this.trie.matches = [];
@@ -605,8 +595,8 @@ $.widget(widgetName, {
 		var self = this;
 		var listBuilder = [];
 
-		// console.timeEnd("prep");
-		// console.time("build");
+		// this._timingMeasure(false, "prep");
+		// this._timingMeasure(true, "build");
 
 		listBuilder.push('<ul>');
 		var options = this.selectbox.get(0).options;
@@ -620,7 +610,7 @@ $.widget(widgetName, {
 			listBuilder.push('<li name="');
 			listBuilder.push(thisOpt.index);
 			listBuilder.push('">');
-			listBuilder.push($.trim(thisOpt.text));
+			listBuilder.push($.trim(thisOpt.innerHTML));
 			listBuilder.push('</li>');
 		}
 
@@ -629,9 +619,9 @@ $.widget(widgetName, {
 		this.listScroll.html(listBuilder.join(''));
 		this.list = this.listScroll.find("ul:first");
 
-		// console.timeEnd("build");
+		// this._timingMeasure(false, "build");
 
-		// console.time("kids");
+		// this._timingMeasure(true, "kids");
 		var theLiSet = this.list.get(0).getElementsByTagName('LI'); // much faster array then .childElements !
 		this.listItems = $(theLiSet);
 
@@ -639,32 +629,59 @@ $.widget(widgetName, {
 		index = 0;
 		while(loopCountdown--) {
 			thisOpt = options[index];
-			self.trie.add( $.trim(thisOpt.text), theLiSet[index++]);
+			self.trie.add( $.trim(thisOpt.text), theLiSet[index++]); //option.text not innerHTML for trie as we dont want escaping
 		} 
 
-		// console.timeEnd("kids");
-		// console.time("tidy");
+		// this._timingMeasure(false, "kids");
+		// this._timingMeasure(true, "tidy");
 		
 		this.visibleCount = theLiSet.length;
 		this.setInputFromMaster();
 		this.selectedLi = null;
 		
+		this.dimensioned = false;
+		this.setDimensions();
+		
 		if(isEnabled) this.enable();
-		// console.timeEnd("tidy");
+		// this._timingMeasure(false, "tidy");
 
+        this._moveAttrs(this.selectbox, this.input, this.options.moveAttrs);
 	},
 
+	/*
+	 * cuts and pastes all listed attributes from the source to the destination
+	 */
+	_moveAttrs: function(src, dest, attrs) {
+		
+        for (var i = 0; i < attrs.length; ++i) {
+            var attr = attrs[i];
+            var value = src.attr(attr);
+            if (value) {
+                dest.attr(attr, value);
+                src.removeAttr(attr);
+            }
+        }
+		
+	},
+	
+	/*
+	 * This method is called by the poller, so needs to return quickly when not dimensioning
+	 */
 	setDimensions: function() {
-		// console.time("1");
+		// if a new UFD (unwrapped) and selectbox is invisible, we cant dimension 
+		if(!this.selectIsWrapped && !this.selectbox.filter(":visible").length) {
+			return;
+		}
+		// if pre-exising UFD needs redimensioning, but is not visible
+		if(this.selectIsWrapped && !this.wrapper.filter(":visible").length){
+			return;
+		}
 
 		this.wrapper.addClass(this.css.hidden);
 		if(this.selectIsWrapped && (!this.options.manualWidth || this.options.unwrapForCSS)) { // unwrap
 			this.wrapper.before(this.selectbox);
 			this.selectIsWrapped = false;
 		}
-
-		// console.timeEnd("1");
-		// console.time("2");
 
 		//match original width
 		var newSelectWidth;
@@ -682,11 +699,9 @@ $.widget(widgetName, {
 		var props = this.options.mimicCSS;
 		for(propPtr in props){
 			var prop = props[propPtr];
+			if(!props.hasOwnProperty(propPtr) || typeof  prop === 'function') continue;
 			this.wrapper.css(prop, this.selectbox.css(prop)); // copy property from selectbox to wrapper
 		}
-
-		// console.timeEnd("2");
-		// console.time("2.5");
 
 		if(!this.selectIsWrapped) { // wrap
 			this.wrapper.get(0).appendChild(this.selectbox.get(0));
@@ -696,27 +711,24 @@ $.widget(widgetName, {
 		this.wrapper.removeClass(this.css.hidden);
 		this.listWrapper.removeClass(this.css.hidden);
 		
-		// console.timeEnd("2.5");
-		// console.time("3");
-
-
 		var buttonWidth = this.button.outerWidth(true);
 		var wrapperBP = this.wrapper.outerWidth() - this.wrapper.width();
 		var inputBP = this.input.outerWidth(true) - this.input.width();
 		var listScrollBP = this.listScroll.outerWidth() - this.listScroll.width();
 		var inputWidth = newSelectWidth - buttonWidth - inputBP;
-		// console.timeEnd("3");
-		// console.time("4");
 
 		this.input.width(inputWidth);
 		this.wrapper.width(newSelectWidth);
-		this.listWrapper.width(newSelectWidth + wrapperBP);
-		this.listScroll.width(newSelectWidth + wrapperBP - listScrollBP);
+		
+		var cssWidth = this.options.listWidthFixed ? "width" : "min-width";
+		this.listWrapper.css(cssWidth, newSelectWidth + wrapperBP);
+		this.listScroll.css(cssWidth, newSelectWidth + wrapperBP - listScrollBP);
 
 /*		console.log(newSelectWidth + " : " + inputWidth + " : " + 
 				buttonWidth + " : " + listScrollBP + " : " + wrapperBP); */ 
 		this.listWrapper.addClass(this.css.hidden);
-		// console.timeEnd("4");
+		
+		this.dimensioned = true;
 
 	},
 
@@ -740,7 +752,7 @@ $.widget(widgetName, {
 	//corrects list wrapper's height depending on list items height
 	setListDisplay: function() {
 
-		// console.time("listDisplay");
+		// this._timingMeasure(true, "listDisplay");
 		if(!this.itemHeight) { // caclulate only once
 			this.itemHeight = this.listItems.filter("li:first").outerHeight(true);
 			// this.log("listItemHeight: " + this.itemHeight);
@@ -784,7 +796,7 @@ $.widget(widgetName, {
 		this.listWrapper.css("top", top );			
 		this.scrollTo();
 
-		// console.timeEnd("listDisplay");
+		// this._timingMeasure(false, "listDisplay");
 		
 		return height;
 	},
@@ -901,7 +913,6 @@ $.widget(widgetName, {
 		return input;
 	},
 
-
 	stopEvent: function(e) {
 		e = e ? e : window.event;
 		e.cancel = true;
@@ -912,17 +923,19 @@ $.widget(widgetName, {
 	},
 
 	overwriteClass: function(array,  classString ) { //fast attribute OVERWRITE
-		// console.time("overwriteClass");
-		var tritem, index, indexB;
-		index = array.length
+		// this._timingMeasure(true, "overwriteClass");
+		var tritem, index, indexB, count = 0;
+		index = array.length;
 		while(index--) {
 			tritem = array[index];
 			indexB = tritem.length;
+			count += indexB;
 			while(indexB--) { // duplicate match array
 				tritem[indexB].setAttribute($.ui.ufd.classAttr, classString);
 			}
 		}
-		// console.timeEnd("overwriteClass");
+		// this._timingMeasure(false, "overwriteClass");
+		return count;
 	},
 
 	listVisible: function() {
@@ -952,38 +965,18 @@ $.widget(widgetName, {
 		this.selectbox.removeAttr("disabled");
 	},
 
-	/*
-		  Select input text: inspired by jCarousel src
-	 */
-	selection: function(field, start, end) {
-		if( field.createTextRange ){
-			var selRange = field.createTextRange();
-			selRange.collapse(true);
-			selRange.moveStart("character", start);
-			selRange.moveEnd("character", end);
-			selRange.select();
-		} else if( field.setSelectionRange ){
-			field.setSelectionRange(start, end);
-		} else {
-			if( field.selectionStart ){
-				field.selectionStart = start;
-				field.selectionEnd = end;
-			}
-		}
-	},
-
 	selectAll: function() {
 		// this.log("Select All");
 		this.input.get(0).select();
-		//this.selection(this.input.get(0), 0, this.input.val().length);
 	},
 
 	getDropdownContainer: function() {
 		var ddc = $("#" + this.options.dropDownID);
 		if(!ddc.length) { //create
-			ddc = $("<div></div>").appendTo("body").
-				css("height", 0).
-				attr("id", this.options.dropDownID);
+			ddc = $("<div></div>")
+				.appendTo("body")
+				.css("height", 0)
+				.attr("id", this.options.dropDownID);
 		}
 		return ddc;
 	},
@@ -1021,32 +1014,43 @@ $.widget(widgetName, {
 			this.wrapper.before(this.selectbox);
 		}
 		
+        this._moveAttrs(this.input, this.selectbox, this.options.moveAttrs); // restore moved attributes
+		this.labels.attr("for", this.selectbox.attr("id")); //revert label 'for' attributes.
+		this.labels = null;
+		
 		this.selectbox.unbind("change." + widgetName);
 		$(document).unbind("click." + widgetName, this._myDocClickHandler);
+		if(this._myPollId) clearInterval(this._myPollId );
 		//all other handlers are in these removed nodes.
 		this.wrapper.remove();
 		this.listWrapper.remove();
 		
-		// see ticket; http://dev.jqueryui.com/ticket/5005
-		// code fixes <= 1.7.2 ; expect bug will be fixed in 1.7.3
-		if($.ui.version <= "1.7.2") { 
+		if($.ui.version < "1.8") { 
+			// see ticket; http://dev.jqueryui.com/ticket/5005 - wasn't fixed 1.7.3
 			this.selectbox.unbind("setData." + widgetName); 
 			this.selectbox.unbind("getData." + widgetName);
 			// will remove all events sorry, might have other side effects but needed
-			this.selectbox.unbind("remove"); 
+			this.selectbox.unbind("remove");
+			
+			$.widget.prototype.destroy.apply(this, arguments); // default destroy
+			
+		} else { // 1.8+
+			$.Widget.prototype.destroy.apply(this, arguments); // default destroy
 		}
-		$.widget.prototype.destroy.apply(this, arguments); // default destroy
 		this.selectbox = null;
+		this._encodeDom = null;
 		
 	},
 	
 	
 	//internal state
+	dimensioned: false, // polling flag indicating that setDimensions needs to be called.
 	selectIsWrapped: false,
 	internalFocus: false, 
 	lastKey: null,
 	selectedLi: null,
 	isUpdatingMaster: false,
+	created: false,
 	hasEmphasis: false,
 	isDisabled: false
 
@@ -1116,6 +1120,8 @@ InfixTrie.prototype.find = function(key) { // string
 
 	for(arrName in trieNodeArray){
 		trie = trieNodeArray[arrName];
+		if(!trieNodeArray.hasOwnProperty(arrName) || typeof trie === 'function') continue;
+		
 		this.markAndRetrieve(matches, trie, toggleTo);
 	}
 	this.markAndRetrieve(misses, this.root, toggleTo); //will ensure whole tree is toggled.
@@ -1131,7 +1137,7 @@ InfixTrie.prototype.findNodeArray = function(key) {
 	var retArray = [this.root];
 	var kLen = key.length;
 	var chr;
-	
+
 	this.cache = this.cache || {};
 	var thisCache = this.cache;
 	
@@ -1223,16 +1229,18 @@ $.ui.ufd.getNewTrie = function(isCaseSensitive, isInfix){
 
 
 $.extend($.ui.ufd, {
-	version: "0.5",
+	version: "0.6",
 	getter: "", //for methods that are getters, not chainables
 	classAttr: (($.support.style) ? "class" : "className"),  // IE6/7 class attribute
 	
-	defaults: {
+	defaults: { // 1.7 default options location, see below
 		skin: "plain", // skin name 
-		suffix: "_ufd", // suffix for pseudo-dropdown text input name attr.  
+		prefix: "ufd-", // prefix for pseudo-dropdown text input name attr.  
 		dropDownID: "ufd-container", // ID for a root-child node for storing dropdown lists. avoids ie6 zindex issues by being at top of tree.
 		logSelector: "#log", // selector string to write log into, if present.
-		mimicCSS: ["marginLeft","marginTop","marginRight","marginBottom"], //copy these properties to widget. Width auto-copied unless min/manual.
+		mimicCSS: ["float", "tabindex", "marginLeft","marginTop","marginRight","marginBottom"], //copy these properties to widget. Width auto-copied unless min/manual.
+        moveAttrs: ["tabindex", "title"], // attributes to move from select to text input
+		
 
 		infix: true, //infix search, not prefix 
 		addEmphasis: false, // add <EM> tags around matches.
@@ -1244,7 +1252,9 @@ $.extend($.ui.ufd, {
 		useUiCss: false, // use jquery UI themeroller classes. 
 		log: false, // log to firebug console (if available) and logSelector (if it exists)
 		unwrapForCSS: false, // unwrap select on reload to get % right on units etc. unwrap causes flicker on reload in iE6
+		listWidthFixed: true, // List width matches widget? If false, list can be wider to fit item width, but uses min-width so no iE6 support.  
 
+		polling: 250, // poll msec to test disabled, dimensioned state of master. 0 to disable polling, but needed for (initially) hidden fields. 
 		listMaxVisible: 10, // number of visible items
 		minWidth: 50, // don't autosize smaller then this.
 		maxWidth: null, // null, or don't autosize larger then this.
@@ -1303,6 +1313,8 @@ $.extend($.ui.ufd, {
 		}
 	}
 });	
+
+$.ui.ufd.prototype.options = $.ui.ufd.defaults; // 1.8 default options location
 
 })(jQuery);
 /* END */

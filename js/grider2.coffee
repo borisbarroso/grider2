@@ -63,8 +63,26 @@ class Grider
     )
     $('.griderEditor').live('focusout', ->
       self.hideEditor( $(this).attr('data-editor') )
+      self.setCellValue(this)
       $(this).trigger("grider:blur", this)
     )
+
+  # sets the value for a cell and the display
+  setCellValue: (elem)->
+    self = this
+    editorType = $(elem).attr("data-editor")
+    input = self.currentCell.find("input:text")
+    disp = self.currentCell.find(".display")
+    if editorType == 'input' or editorType == 'textarea'
+      value = $(elem).val()
+      input.val(value)
+      disp.html(value)
+    else if editorType == 'combo'
+      select = $('#' + self.getColumn($(self.currentCell).data("name")).editor_id )
+      value = select.val()
+      input.val( value )
+      disp.html( select.ufd("getCurrentTextValue") )
+      #$(self.currentCell).data("name")])
 
   # Starts the editor for the clicked cell
   startEditor: (cell)->
@@ -145,16 +163,26 @@ class Grider
   # show for combo
   showCombo: (cell, col)->
     pos = cell.position()
+    value = cell.find("input:text").val()
+    select = $('#' + col.editor_id)
+    select.val(value)
+    index = select[0].selectedIndex
+
     editor = $('#' + col.editor_id).parent("span.ufd")
     editor.css({ top: pos.top + 'px', left: pos.left + 'px'}).show()
     editor.find("input:text").focus()
+    li = $('#states').ufd("getDropdownContainer").find("li:eq(" + index + ")")[0]
+    $('#states').ufd("setActive", li)
+    $('#states').ufd("setInputFromMaster")
+    $('#states').ufd("scrollTo")
     editor
 
   # Show for input
   showInput: (cell, col)->
     pos = cell.position()
+    value = cell.find("input:text").val()
     editor = $('#' + col.editor_id)
-    editor.css({ top: pos.top + 'px', left: pos.left + 'px'}).show().focus()
+    editor.css({ top: pos.top + 'px', left: pos.left + 'px'}).val(value).show().focus()
 
   # show for date
   showDate: (cell, col)->
